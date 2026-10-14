@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CcpTask, InspectionRecord, BranchPerformance } from '../types';
 import { getBranchData } from '../utils/storage';
-import { ShieldCheck, RotateCcw, Building2, Check } from 'lucide-react';
+import { ShieldCheck, RotateCcw, Building2, Check, QrCode, Camera, Eye } from 'lucide-react';
+import { TestQrScreen } from './TestQrScreen';
+import { PhotoViewModal } from '../components/PhotoViewModal';
+import { getPhotoFromIdb } from '../utils/photoStorage';
 
 interface AdminScreenProps {
   tasks: CcpTask[];
@@ -16,6 +19,9 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   onReturnToHome,
   onResetData,
 }) => {
+  const [showQrPage, setShowQrPage] = useState<boolean>(false);
+  const [modalPhotoUrl, setModalPhotoUrl] = useState<string | null>(null);
+
   const completedCount = tasks.filter((t) => t.completedAt).length;
   const totalTasks = tasks.length;
   const currentStoreRate = Math.round((completedCount / totalTasks) * 100);
@@ -28,11 +34,22 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
     anomalyCount
   );
 
+  const handleViewRecordPhoto = async (photoIdOrUrl?: string) => {
+    if (!photoIdOrUrl) return;
+    const fromIdb = await getPhotoFromIdb(photoIdOrUrl);
+    setModalPhotoUrl(fromIdb || photoIdOrUrl);
+  };
+
+  // If user opened the Test QR codes page
+  if (showQrPage) {
+    return <TestQrScreen onBack={() => setShowQrPage(false)} />;
+  }
+
   return (
-    <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[28px] select-none overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[28px] select-none overflow-hidden relative">
       {/* 2단: 가운데 내용 영역 (스크롤 가능) */}
       <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-4.5 px-4.5 pb-4 overscroll-contain bg-[#F5F7FB]">
-        {/* Title */}
+        {/* Title & Actions */}
         <div className="flex items-center justify-between mb-3 px-0.5">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-[10px] bg-[#E8F0FE] flex items-center justify-center text-[#2B6BF3]">
@@ -40,9 +57,15 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
             </div>
             <h2 className="text-[20px] font-bold text-[#1B2333]">점포별 점검 현황</h2>
           </div>
-          <span className="text-[12px] font-medium text-[#2B6BF3] bg-[#E8F0FE] px-2.5 py-0.5 rounded-full">
-            실시간
-          </span>
+
+          {/* [QR 코드 보기] 메뉴 버튼 */}
+          <button
+            onClick={() => setShowQrPage(true)}
+            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#2B6BF3] bg-[#E8F0FE] hover:bg-[#d8e7fe] active:scale-95 px-3 py-1 rounded-full transition cursor-pointer shadow-2xs"
+          >
+            <QrCode className="w-3.5 h-3.5" />
+            <span>QR 코드 보기</span>
+          </button>
         </div>
 
         {/* 3 KPI Cards: 흰색, 모서리 16px, 그림자 없음 */}
@@ -181,11 +204,32 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
                           ? '직접 입력'
                           : '사진 찍기'}
                       </span>
+
+                      {/* Photo preview button if record has photo */}
+                      {rec.photoUrl && (
+                        <button
+                          onClick={() => handleViewRecordPhoto(rec.photoUrl)}
+                          className="flex items-center gap-1 text-[11px] font-semibold text-[#2B6BF3] bg-[#E8F0FE] hover:bg-[#d8e7fe] px-2 py-0.5 rounded-full cursor-pointer ml-1 transition"
+                        >
+                          <Camera className="w-3 h-3" />
+                          <span>사진 보기</span>
+                        </button>
+                      )}
                     </div>
 
                     {rec.anomaly && (
-                      <div className="mt-1 text-[12px] font-medium text-[#E5484D] bg-rose-50 px-2 py-0.5 rounded-[6px]">
-                        처음 {rec.anomaly.initialValue.replace(/^\+/, '')} 기준 초과 → [{rec.anomaly.action}] 후 {rec.anomaly.recheckValue.replace(/^\+/, '')} 적합
+                      <div className="mt-1 text-[12px] font-medium text-[#E5484D] bg-rose-50 px-2 py-0.5 rounded-[6px] flex items-center justify-between">
+                        <span>
+                          처음 {rec.anomaly.initialValue.replace(/^\+/, '')} 기준 초과 → [{rec.anomaly.action}] 후 {rec.anomaly.recheckValue.replace(/^\+/, '')} 적합
+                        </span>
+                        {rec.anomaly.actionPhotoUrl && (
+                          <button
+                            onClick={() => handleViewRecordPhoto(rec.anomaly?.actionPhotoUrl)}
+                            className="text-[11px] font-bold text-[#2B6BF3] hover:underline shrink-0 ml-1 cursor-pointer"
+                          >
+                            조치 사진
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -201,6 +245,14 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
           )}
         </div>
       </div>
+
+      {/* Photo View Modal */}
+      <PhotoViewModal
+        isOpen={Boolean(modalPhotoUrl)}
+        photoUrl={modalPhotoUrl}
+        title="현장 점검 사진"
+        onClose={() => setModalPhotoUrl(null)}
+      />
 
       {/* 3단: 하단 고정 버튼 (높이 56px, 모서리 14px, scale 0.98) */}
       <div

@@ -88,7 +88,8 @@ export default function App() {
   const handleTempMeasureComplete = (
     value: string,
     method: InputMethod,
-    passed: boolean
+    passed: boolean,
+    photoId?: string
   ) => {
     if (!selectedTask) return;
 
@@ -100,6 +101,7 @@ export default function App() {
       method,
       value,
       passed,
+      photoUrl: photoId,
     };
 
     setAppState((prev) => ({
@@ -111,6 +113,7 @@ export default function App() {
               completedAt: virtualTimeStr,
               completedValue: value,
               completedMethod: method,
+              completedPhotoId: photoId,
             }
           : t
       ),
@@ -124,7 +127,8 @@ export default function App() {
   // Temperature measurement fail -> Navigate to Corrective Action
   const handleTempMeasureFail = (
     measuredValue: string,
-    method: InputMethod
+    method: InputMethod,
+    photoId?: string
   ) => {
     setFailedMeasureInfo({ value: measuredValue, method });
     setCurrentScreen('CORRECTIVE_ACTION');
@@ -165,6 +169,7 @@ export default function App() {
               completedAt: virtualTimeStr,
               completedValue: recheckValue,
               completedMethod: failedMeasureInfo.method,
+              completedPhotoId: photoUrl,
               hasAnomaly: true,
             }
           : t
@@ -201,6 +206,7 @@ export default function App() {
               completedAt: virtualTimeStr,
               completedValue: value,
               completedMethod: 'PHOTO',
+              completedPhotoId: photoUrl,
             }
           : t
       ),
@@ -271,6 +277,7 @@ export default function App() {
         {currentScreen === 'HOME' && (
           <HomeScreen
             tasks={appState.tasks}
+            records={appState.records}
             virtualTimeMinutes={appState.virtualTimeMinutes}
             atpCompletedThisWeek={appState.atpCompletedThisWeek}
             onSelectTask={handleSelectTask}

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { CcpTask } from '../types';
 import { Timer, Camera, Check, Bell, Play } from 'lucide-react';
+import { CameraCapture } from '../components/CameraCapture';
+import { PhotoViewModal } from '../components/PhotoViewModal';
 
 interface SanitizeScreenProps {
   task: CcpTask;
@@ -13,7 +15,8 @@ export const SanitizeScreen: React.FC<SanitizeScreenProps> = ({ task, onComplete
   const [secondsLeft, setSecondsLeft] = useState(totalSeconds);
   const [isRunning, setIsRunning] = useState(false);
   const [timerFinished, setTimerFinished] = useState(false);
-  const [rinsePhotoTaken, setRinsePhotoTaken] = useState(false);
+  const [photoId, setPhotoId] = useState<string | undefined>(undefined);
+  const [modalPhotoUrl, setModalPhotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isRunning && !timerFinished) {
@@ -48,10 +51,10 @@ export const SanitizeScreen: React.FC<SanitizeScreenProps> = ({ task, onComplete
   const progressPercent = Math.round(((totalSeconds - secondsLeft) / totalSeconds) * 100);
 
   const handleFinish = () => {
-    onComplete('소독액에 담그고 헹굼 완료', rinsePhotoTaken ? 'rinse_photo.jpg' : undefined);
+    onComplete('소독액에 담그고 헹굼 완료', photoId);
   };
 
-  const isFormComplete = timerFinished && rinsePhotoTaken;
+  const isFormComplete = timerFinished && Boolean(photoId);
 
   return (
     <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[28px] select-none overflow-hidden">
@@ -160,36 +163,27 @@ export const SanitizeScreen: React.FC<SanitizeScreenProps> = ({ task, onComplete
             2. 흐르는 물로 헹구고 사진 찍기
           </span>
 
-          <div
-            onClick={() => timerFinished && setRinsePhotoTaken(true)}
-            className={`w-full h-18 rounded-[14px] border border-dashed flex items-center justify-center transition cursor-pointer ${
-              !timerFinished
-                ? 'bg-[#F5F7FB] border-slate-200 text-[#6B7690] cursor-not-allowed'
-                : rinsePhotoTaken
-                ? 'bg-[#E8F0FE] border-[#2B6BF3] text-[#1F52C9]'
-                : 'bg-white border-[#BCD0F7] text-[#2B6BF3] hover:bg-[#E8F0FE]/50'
-            }`}
-          >
-            {rinsePhotoTaken ? (
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-[#2B6BF3] text-white flex items-center justify-center">
-                  <Check className="w-4 h-4 stroke-[2.5]" />
-                </div>
-                <span className="text-[14px] font-semibold">헹굼 사진이 등록되었어요</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Camera className="w-5 h-5 text-[#2B6BF3]" />
-                <span className="text-[14px] font-medium">
-                  {timerFinished
-                    ? '눌러서 헹굼 사진 찍기'
-                    : '1단계가 끝나면 사진을 찍을 수 있어요'}
-                </span>
-              </div>
-            )}
-          </div>
+          <CameraCapture
+            photoId={photoId}
+            disabled={!timerFinished}
+            label={
+              timerFinished
+                ? '눌러서 헹굼 사진 찍기'
+                : '1단계가 끝나면 사진을 찍을 수 있어요'
+            }
+            onPhotoCaptured={(id) => setPhotoId(id)}
+            onViewPhoto={(url) => setModalPhotoUrl(url)}
+          />
         </div>
       </div>
+
+      {/* Photo Modal */}
+      <PhotoViewModal
+        isOpen={Boolean(modalPhotoUrl)}
+        photoUrl={modalPhotoUrl}
+        title="소독 헹굼 사진"
+        onClose={() => setModalPhotoUrl(null)}
+      />
 
       {/* 3단: 하단 고정 버튼 (56px, 14px radius, #2B6BF3 or #E3EAF8) */}
       <div
@@ -199,7 +193,7 @@ export const SanitizeScreen: React.FC<SanitizeScreenProps> = ({ task, onComplete
         {isFormComplete ? (
           <button
             onClick={handleFinish}
-            className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
           >
             <Check className="w-5 h-5 stroke-[2.5]" />
             <span>완료할게요</span>

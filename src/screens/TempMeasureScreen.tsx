@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { CcpTask, InputMethod } from '../types';
 import { Bluetooth, Keyboard, Camera, CheckCircle2, AlertTriangle, Delete } from 'lucide-react';
+import { CameraCapture } from '../components/CameraCapture';
+import { PhotoViewModal } from '../components/PhotoViewModal';
 
 interface TempMeasureScreenProps {
   task: CcpTask;
-  onComplete: (value: string, method: InputMethod, passed: boolean) => void;
-  onFail: (measuredValue: string, method: InputMethod) => void;
+  onComplete: (value: string, method: InputMethod, passed: boolean, photoId?: string) => void;
+  onFail: (measuredValue: string, method: InputMethod, photoId?: string) => void;
 }
 
 export const TempMeasureScreen: React.FC<TempMeasureScreenProps> = ({
@@ -22,7 +24,8 @@ export const TempMeasureScreen: React.FC<TempMeasureScreenProps> = ({
   const [bleValue, setBleValue] = useState<number>(isFreezer ? -19.5 : 3.4);
   const [directInput, setDirectInput] = useState<string>(isFreezer ? '-19.2' : '3.6');
   const [photoValue, setPhotoValue] = useState<number>(isFreezer ? -19.0 : 3.8);
-  const [photoTaken, setPhotoTaken] = useState<boolean>(false);
+  const [photoId, setPhotoId] = useState<string | undefined>(undefined);
+  const [modalPhotoUrl, setModalPhotoUrl] = useState<string | null>(null);
 
   let currentNum = 0;
   let formattedDisplay = '';
@@ -59,11 +62,13 @@ export const TempMeasureScreen: React.FC<TempMeasureScreenProps> = ({
   const handleFinish = () => {
     const finalVal = `${formattedDisplay}℃`;
     if (isPassed) {
-      onComplete(finalVal, method, true);
+      onComplete(finalVal, method, true, photoId);
     } else {
-      onFail(finalVal, method);
+      onFail(finalVal, method, photoId);
     }
   };
+
+  const isPhotoMethodReady = method !== 'PHOTO' || Boolean(photoId);
 
   // 기준 범위 가로 막대 계산
   // 냉장: -2℃ ~ 12℃ (기준: 5℃)
@@ -286,33 +291,38 @@ export const TempMeasureScreen: React.FC<TempMeasureScreenProps> = ({
           )}
 
           {method === 'PHOTO' && (
-            <div className="flex flex-col items-center">
-              <div className="w-full h-16 bg-[#F5F7FB] rounded-[12px] border border-dashed border-[#BCD0F7] flex items-center justify-center mb-2 text-[#6B7690]">
-                <span className="text-[13px] font-medium">
-                  {photoTaken ? `${photoValue}℃ 사진 찍기 완료` : '사진을 찍어주세요'}
-                </span>
-              </div>
+            <div className="flex flex-col gap-2.5">
+              <span className="text-[13px] font-semibold text-[#1B2333]">
+                온도계 화면 사진 촬영
+              </span>
 
-              <div className="flex gap-2 w-full">
+              <CameraCapture
+                photoId={photoId}
+                label="온도계 사진 찍기"
+                onPhotoCaptured={(id, dataUrl) => {
+                  setPhotoId(id);
+                }}
+                onViewPhoto={(url) => setModalPhotoUrl(url)}
+              />
+
+              <div className="flex gap-2 w-full pt-1">
                 <button
+                  type="button"
                   onClick={() => {
-                    setPhotoTaken(true);
                     setPhotoValue(isFreezer ? -19.0 : 3.8);
                   }}
-                  className="flex-1 py-2 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-95 text-white font-medium text-[13px] rounded-[10px] flex items-center justify-center gap-1 cursor-pointer"
+                  className="flex-1 py-1.5 bg-[#E8F0FE] hover:bg-[#d8e7fe] text-[#1F52C9] font-medium text-[12px] rounded-[8px] flex items-center justify-center gap-1 cursor-pointer"
                 >
-                  <Camera className="w-4 h-4" />
-                  <span>적합 사진 찍기 (3.8℃)</span>
+                  <span>적합 수치 (3.8℃)</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
-                    setPhotoTaken(true);
                     setPhotoValue(isFreezer ? -13.0 : 8.5);
                   }}
-                  className="flex-1 py-2 bg-[#E5484D] hover:opacity-90 active:scale-95 text-white font-medium text-[13px] rounded-[10px] flex items-center justify-center gap-1 cursor-pointer"
+                  className="flex-1 py-1.5 bg-rose-50 hover:bg-rose-100 text-[#E5484D] font-medium text-[12px] rounded-[8px] flex items-center justify-center gap-1 cursor-pointer"
                 >
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>기준 초과 사진 찍기 (8.5℃)</span>
+                  <span>초과 수치 (8.5℃)</span>
                 </button>
               </div>
             </div>
@@ -320,15 +330,31 @@ export const TempMeasureScreen: React.FC<TempMeasureScreenProps> = ({
         </div>
       </div>
 
+      {/* Photo Modal */}
+      <PhotoViewModal
+        isOpen={Boolean(modalPhotoUrl)}
+        photoUrl={modalPhotoUrl}
+        title={`${task.title} 사진`}
+        onClose={() => setModalPhotoUrl(null)}
+      />
+
       {/* 3단: 하단 고정 버튼 (높이 56px, 모서리 14px, scale 0.98) */}
       <div
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
         className="shrink-0 px-4.5 pt-2.5 bg-white border-t border-[#E8F0FE] z-10"
       >
-        {isPassed ? (
+        {!isPhotoMethodReady ? (
+          <button
+            disabled
+            className="w-full h-14 bg-[#E3EAF8] text-[#9FB0D4] font-medium text-[16px] rounded-[14px] cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <Camera className="w-5 h-5 stroke-[2]" />
+            <span>사진을 찍어야 완료할 수 있어요</span>
+          </button>
+        ) : isPassed ? (
           <button
             onClick={handleFinish}
-            className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
           >
             <CheckCircle2 className="w-5 h-5 stroke-[2.2]" />
             <span>완료할게요</span>
@@ -336,7 +362,7 @@ export const TempMeasureScreen: React.FC<TempMeasureScreenProps> = ({
         ) : (
           <button
             onClick={handleFinish}
-            className="w-full h-14 bg-[#E5484D] hover:opacity-90 active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full h-14 bg-[#E5484D] hover:opacity-90 active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
           >
             <AlertTriangle className="w-5 h-5 stroke-[2.2]" />
             <span>이상 조치하기</span>

@@ -1,6 +1,6 @@
 import { CcpTask, InspectionRecord, TaskStatus, BranchPerformance, AtpSpot } from '../types';
 
-const STORAGE_KEY = 's_hygiene_state_v2';
+const STORAGE_KEY = 's_hygiene_state_v3';
 
 export const INITIAL_TASKS: CcpTask[] = [
   {
@@ -13,7 +13,7 @@ export const INITIAL_TASKS: CcpTask[] = [
     standardDesc: '5℃ 이하면 적합',
     targetMax: 5.0,
     locationName: '조리실 냉장고 앞',
-    qrCodeId: 'QR-FRIDGE-01',
+    qrCodeId: 'FRIDGE-01',
     type: 'temperature',
   },
   {
@@ -26,7 +26,7 @@ export const INITIAL_TASKS: CcpTask[] = [
     standardDesc: '-18℃ 이하면 적합',
     targetMax: -18.0,
     locationName: '조리실 냉동고 앞',
-    qrCodeId: 'QR-FREEZER-02',
+    qrCodeId: 'FREEZER-01',
     type: 'temperature',
   },
   {
@@ -38,16 +38,16 @@ export const INITIAL_TASKS: CcpTask[] = [
     minute: 0,
     standardDesc: '소독액에 5분 담그고, 흐르는 물로 헹궈요',
     locationName: '세척 싱크대 앞',
-    qrCodeId: 'QR-SINK-03',
+    qrCodeId: 'SANITIZE-01',
     type: 'sanitize',
   },
 ];
 
 export const INITIAL_ATP_SPOTS: AtpSpot[] = [
-  { id: 1, name: '칼·도마 세트', zone: '조리대 A구역', qrCode: 'ATP-QR-01' },
-  { id: 2, name: '대형 배식대 트레이', zone: '배식라인 중앙', qrCode: 'ATP-QR-02' },
-  { id: 3, name: '믹서기 분쇄날', zone: '전처리실 분쇄기', qrCode: 'ATP-QR-03' },
-  { id: 4, name: '조리원 위생 손소독대', zone: '조리실 입구 소독대', qrCode: 'ATP-QR-04' },
+  { id: 1, name: '칼·도마 세트', zone: '조리대 A구역', qrCode: 'ATP-01' },
+  { id: 2, name: '대형 배식대 트레이', zone: '배식라인 중앙', qrCode: 'ATP-02' },
+  { id: 3, name: '믹서기 분쇄날', zone: '전처리실 분쇄기', qrCode: 'ATP-03' },
+  { id: 4, name: '조리원 위생 손소독대', zone: '조리실 입구 소독대', qrCode: 'ATP-04' },
 ];
 
 export interface AppState {

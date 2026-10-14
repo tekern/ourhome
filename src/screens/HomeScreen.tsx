@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { CcpTask, TaskStatus } from '../types';
+import { CcpTask, TaskStatus, InspectionRecord } from '../types';
 import { getTaskStatus } from '../utils/storage';
-import { Check, QrCode, ShieldCheck, ChevronRight, Smile, Meh, Frown } from 'lucide-react';
+import { Check, QrCode, ShieldCheck, ChevronRight, Smile, Meh, Frown, Camera } from 'lucide-react';
+import { PhotoViewModal } from '../components/PhotoViewModal';
+import { getPhotoFromIdb } from '../utils/photoStorage';
 
 interface HomeScreenProps {
   tasks: CcpTask[];
+  records?: InspectionRecord[];
   virtualTimeMinutes: number;
   atpCompletedThisWeek: boolean;
   onSelectTask: (task: CcpTask) => void;
@@ -21,6 +24,7 @@ interface WeekDayInfo {
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   tasks,
+  records = [],
   virtualTimeMinutes,
   atpCompletedThisWeek,
   onSelectTask,
@@ -28,6 +32,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenAdmin,
 }) => {
   const [selectedDayIndex, setSelectedDayIndex] = useState<number>(1); // 1 = 화요일 (오늘)
+  const [modalPhotoUrl, setModalPhotoUrl] = useState<string | null>(null);
+  const [modalTitle, setModalTitle] = useState<string>('점검 사진');
+
+  const handleOpenPhotoModal = async (photoIdOrUrl: string, title: string) => {
+    const fromIdb = await getPhotoFromIdb(photoIdOrUrl);
+    setModalPhotoUrl(fromIdb || photoIdOrUrl);
+    setModalTitle(title);
+  };
 
   const completedCount = tasks.filter((t) => t.completedAt).length;
   const totalCount = tasks.length;
@@ -167,38 +179,58 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </div>
 
                 {/* 카드 본체 */}
-                <div
-                  onClick={() => onSelectTask(task)}
-                  className={`p-4 rounded-[16px] transition cursor-pointer flex items-center justify-between border ${
-                    isCurrent
-                      ? 'bg-[#E8F0FE] border-[#BCD0F7]'
-                      : 'bg-white border-transparent hover:border-[#E8F0FE]'
-                  }`}
-                >
-                  <div className="min-w-0 pr-3">
-                    <h3
-                      className={`text-[18px] font-semibold leading-snug truncate ${
-                        isCurrent ? 'text-[#1F52C9]' : 'text-[#1B2333]'
+                {(() => {
+                  const matchingRecord = records.find((r) => r.taskId === task.id);
+                  const taskPhotoId = task.completedPhotoId || matchingRecord?.photoUrl || matchingRecord?.anomaly?.actionPhotoUrl;
+
+                  return (
+                    <div
+                      onClick={() => onSelectTask(task)}
+                      className={`p-4 rounded-[16px] transition cursor-pointer flex items-center justify-between border ${
+                        isCurrent
+                          ? 'bg-[#E8F0FE] border-[#BCD0F7]'
+                          : 'bg-white border-transparent hover:border-[#E8F0FE]'
                       }`}
                     >
-                      {task.title}
-                    </h3>
-                    <p className="text-[14px] font-medium text-[#6B7690] mt-0.5 truncate">
-                      {task.completedValue ? (
-                        <span className="text-[#22A06B] font-semibold">
-                          {task.completedValue.replace(/^\+/, '').replace(/\.0(?=℃|$)/, '')} · {
-                            task.completedMethod === 'PHOTO'
-                              ? '사진으로 기록'
-                              : task.completedMethod === 'DIRECT'
-                              ? '직접 입력'
-                              : '자동으로 기록'
-                          }
-                        </span>
-                      ) : (
-                        <span>{task.standardDesc}</span>
-                      )}
-                    </p>
-                  </div>
+                      <div className="min-w-0 pr-3">
+                        <h3
+                          className={`text-[18px] font-semibold leading-snug truncate ${
+                            isCurrent ? 'text-[#1F52C9]' : 'text-[#1B2333]'
+                          }`}
+                        >
+                          {task.title}
+                        </h3>
+                        <div className="text-[14px] font-medium text-[#6B7690] mt-0.5 flex items-center flex-wrap gap-1">
+                          {task.completedValue ? (
+                            <>
+                              <span className="text-[#22A06B] font-semibold">
+                                {task.completedValue.replace(/^\+/, '').replace(/\.0(?=℃|$)/, '')} · {
+                                  task.completedMethod === 'PHOTO'
+                                    ? '사진으로 기록'
+                                    : task.completedMethod === 'DIRECT'
+                                    ? '직접 입력'
+                                    : '자동으로 기록'
+                                }
+                              </span>
+                              {taskPhotoId && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenPhotoModal(taskPhotoId, task.title);
+                                  }}
+                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#2B6BF3] bg-[#E8F0FE] hover:bg-[#d8e7fe] active:scale-95 px-2 py-0.5 rounded-full transition cursor-pointer"
+                                >
+                                  <Camera className="w-3 h-3" />
+                                  <span>사진 보기</span>
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            <span>{task.standardDesc}</span>
+                          )}
+                        </div>
+                      </div>
 
                   {/* 우측 체크 또는 시작 버튼 */}
                   <div className="shrink-0 flex items-center gap-2">
@@ -227,9 +259,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     )}
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })()}
+          </div>
+        );
+      })}
 
           {/* 4. 청결도 측정 · 주 1회 카드 */}
           <div
@@ -294,6 +328,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </button>
         )}
       </div>
+
+      {/* Photo View Modal */}
+      <PhotoViewModal
+        isOpen={Boolean(modalPhotoUrl)}
+        photoUrl={modalPhotoUrl}
+        title={modalTitle}
+        onClose={() => setModalPhotoUrl(null)}
+      />
     </div>
   );
 };

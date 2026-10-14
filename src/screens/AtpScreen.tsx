@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { AtpSpot } from '../types';
-import { QrCode, Check, Camera, AlertTriangle, RotateCcw } from 'lucide-react';
+import { QrCode, Check, Camera, AlertTriangle, RotateCcw, X, Eye } from 'lucide-react';
+import { QrCameraScanner } from '../components/QrCameraScanner';
+import { PhotoViewModal } from '../components/PhotoViewModal';
+import { resizeAndCompressImage, savePhotoToIdb, getPhotoFromIdb } from '../utils/photoStorage';
 
 interface AtpScreenProps {
   spots: AtpSpot[];
@@ -11,6 +14,12 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
   const [spots, setSpots] = useState<AtpSpot[]>(initialSpots);
   const [activeSpotIndex, setActiveSpotIndex] = useState<number>(0);
   const [isMeasuring, setIsMeasuring] = useState<boolean>(false);
+  const [isScanningQr, setIsScanningQr] = useState<boolean>(false);
+  const [activeSpotForPhoto, setActiveSpotForPhoto] = useState<number | null>(null);
+  const [modalPhotoUrl, setModalPhotoUrl] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Spot 2 has an exceeding value (320 RLU > 200 RLU) as requested
   const mockRluValues = [42, 320, 125, 38];
@@ -67,18 +76,46 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
     }, 350);
   };
 
-  // Toggle photo capture for a specific spot
-  const handleTakePhotoForSpot = (spotId: number) => {
-    setSpots((prev) =>
-      prev.map((s) =>
-        s.id === spotId
-          ? {
-              ...s,
-              photoUrl: s.photoUrl ? undefined : `atp_spot_${spotId}.jpg`,
-            }
-          : s
-      )
-    );
+  // Open real camera file input for a spot
+  const handleTriggerPhotoForSpot = (spotId: number) => {
+    setActiveSpotForPhoto(spotId);
+    setPhotoError(null);
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || activeSpotForPhoto === null) return;
+
+    try {
+      const compressedUrl = await resizeAndCompressImage(file, 800, 0.7);
+      const photoId = `atp_spot_${activeSpotForPhoto}_${Date.now()}`;
+      await savePhotoToIdb(photoId, compressedUrl);
+
+      setSpots((prev) =>
+        prev.map((s) =>
+          s.id === activeSpotForPhoto
+            ? {
+                ...s,
+                photoUrl: photoId,
+              }
+            : s
+        )
+      );
+    } catch (err) {
+      console.error('ATP photo error', err);
+      setPhotoError('사진을 저장하지 못했어요. 다시 찍어주세요');
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      setActiveSpotForPhoto(null);
+    }
+  };
+
+  const handleOpenPhotoModal = async (photoIdOrUrl: string) => {
+    const fromDb = await getPhotoFromIdb(photoIdOrUrl);
+    setModalPhotoUrl(fromDb || photoIdOrUrl);
   };
 
   const handleFinishAll = () => {
@@ -86,7 +123,17 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
   };
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[28px] select-none overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[28px] select-none overflow-hidden relative">
+      {/* Hidden real camera capture input for ATP spot photos */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handlePhotoFileChange}
+        className="hidden"
+      />
+
       {/* 2단: 가운데 내용 영역 */}
       <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-4.5 px-4.5 pb-4 overscroll-contain bg-[#F5F7FB] flex flex-col gap-3">
         {/* Header Info */}
@@ -109,6 +156,12 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
             <span>정해진 4곳</span>
             <span className="text-[#2B6BF3] font-semibold">{completedSpotsCount} / 4 완료</span>
           </div>
+
+          {photoError && (
+            <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-[12px] text-[#E5484D] text-[13px] font-medium">
+              {photoError}
+            </div>
+          )}
 
           {spots.map((spot, idx) => {
             const isDone = spot.rluValue !== undefined;
@@ -149,7 +202,6 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
                       <h3 className="text-[16px] font-semibold text-[#1B2333] truncate leading-tight">
                         {spot.name}
                       </h3>
-                      {/* 위치 설명에서 코드 삭제하고 구역만 표시 */}
                       <p className="text-[13px] font-medium text-[#6B7690] truncate mt-0.5">
                         {spot.zone}
                       </p>
@@ -192,20 +244,35 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
 
                 {/* Individual Photo Button */}
                 <div className="flex items-center justify-between pt-1 border-t border-slate-100/80">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleTakePhotoForSpot(spot.id);
-                    }}
-                    className={`flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-[8px] transition cursor-pointer ${
-                      spot.photoUrl
-                        ? 'bg-[#E8F0FE] text-[#1F52C9] font-semibold'
-                        : 'bg-[#F5F7FB] text-[#6B7690] hover:bg-slate-200'
-                    }`}
-                  >
-                    <Camera className="w-3.5 h-3.5" />
-                    <span>{spot.photoUrl ? '사진 등록 완료 (다시 찍기)' : '사진 찍기'}</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTriggerPhotoForSpot(spot.id);
+                      }}
+                      className={`flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-[8px] transition cursor-pointer ${
+                        spot.photoUrl
+                          ? 'bg-[#E8F0FE] text-[#1F52C9] font-semibold'
+                          : 'bg-[#F5F7FB] text-[#6B7690] hover:bg-slate-200'
+                      }`}
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>{spot.photoUrl ? '사진 등록 완료 (다시 찍기)' : '사진 찍기'}</span>
+                    </button>
+
+                    {spot.photoUrl && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (spot.photoUrl) handleOpenPhotoModal(spot.photoUrl);
+                        }}
+                        className="text-[12px] text-[#2B6BF3] hover:underline font-medium flex items-center gap-0.5 cursor-pointer"
+                      >
+                        <Eye className="w-3 h-3" />
+                        <span>사진 보기</span>
+                      </button>
+                    )}
+                  </div>
 
                   {isExceeded && (
                     <span className="text-[12px] font-semibold text-[#E5484D] flex items-center gap-1">
@@ -258,7 +325,7 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
                 </div>
 
                 <button
-                  onClick={() => handleTakePhotoForSpot(currentSpot.id)}
+                  onClick={() => handleTriggerPhotoForSpot(currentSpot.id)}
                   className={`flex items-center gap-1 text-[13px] px-3 py-1.5 rounded-[8px] font-medium transition cursor-pointer ${
                     currentSpot.photoUrl
                       ? 'bg-[#E8F0FE] text-[#1F52C9] font-semibold'
@@ -270,10 +337,11 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
                 </button>
               </div>
 
+              {/* QR 찍고 측정하기 버튼: Opens QR Camera Scanner Modal */}
               <button
-                onClick={handleMeasureCurrentSpot}
+                onClick={() => setIsScanningQr(true)}
                 disabled={isMeasuring}
-                className="w-full py-3 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-semibold text-[15px] rounded-[12px] flex items-center justify-center gap-2 transition cursor-pointer"
+                className="w-full py-3 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-semibold text-[15px] rounded-[12px] flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
               >
                 <QrCode className="w-4 h-4" />
                 <span>
@@ -287,6 +355,51 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
         </div>
       </div>
 
+      {/* QR Camera Scanner Modal for ATP Spot */}
+      {isScanningQr && currentSpot && (
+        <div className="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4 backdrop-blur-xs select-none animate-fadeIn">
+          <div className="w-full max-w-[340px] bg-white rounded-[24px] p-5 shadow-2xl flex flex-col items-center border border-slate-100">
+            <div className="flex items-center justify-between w-full mb-3">
+              <div>
+                <span className="text-[12px] font-semibold text-[#2B6BF3] bg-[#E8F0FE] px-2 py-0.5 rounded-full">
+                  ATP {currentSpot.id}번
+                </span>
+                <h3 className="text-[17px] font-bold text-[#1B2333] mt-0.5">
+                  {currentSpot.name} QR 스캔
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsScanningQr(false)}
+                className="p-1.5 text-[#6B7690] hover:text-[#1B2333] active:scale-95 transition rounded-full cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <QrCameraScanner
+              expectedCode={currentSpot.qrCode}
+              expectedSpotName={currentSpot.name}
+              onScanSuccess={() => {
+                setIsScanningQr(false);
+                handleMeasureCurrentSpot();
+              }}
+              onFallbackDemo={() => {
+                setIsScanningQr(false);
+                handleMeasureCurrentSpot();
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Photo Modal */}
+      <PhotoViewModal
+        isOpen={Boolean(modalPhotoUrl)}
+        photoUrl={modalPhotoUrl}
+        title="청결도 점검 사진"
+        onClose={() => setModalPhotoUrl(null)}
+      />
+
       {/* 3단: 하단 고정 버튼 */}
       <div
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
@@ -295,7 +408,7 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
         {allSpotsMeasured ? (
           <button
             onClick={handleFinishAll}
-            className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
           >
             <Check className="w-5 h-5 stroke-[2.5]" />
             <span>완료할게요</span>

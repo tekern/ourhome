@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { CcpTask, InputMethod } from '../types';
 import { Flame, Sliders, Trash2, Camera, Check, AlertTriangle } from 'lucide-react';
+import { CameraCapture } from '../components/CameraCapture';
+import { PhotoViewModal } from '../components/PhotoViewModal';
 
 interface CorrectiveActionScreenProps {
   task: CcpTask;
@@ -20,7 +22,8 @@ export const CorrectiveActionScreen: React.FC<CorrectiveActionScreenProps> = ({
   onResolveAnomaly,
 }) => {
   const [selectedAction, setSelectedAction] = useState<'재가열' | '온도 재조정' | '폐기'>('온도 재조정');
-  const [hasPhoto, setHasPhoto] = useState(false);
+  const [photoId, setPhotoId] = useState<string | undefined>(undefined);
+  const [modalPhotoUrl, setModalPhotoUrl] = useState<string | null>(null);
   const [recheckValue, setRecheckValue] = useState<string>(
     task.id === 'freezer' ? '-19.2℃' : '3.6℃'
   );
@@ -34,10 +37,11 @@ export const CorrectiveActionScreen: React.FC<CorrectiveActionScreenProps> = ({
     onResolveAnomaly(
       selectedAction,
       recheckValue,
-      hasPhoto ? 'captured_photo_action.jpg' : undefined
+      photoId
     );
   };
 
+  const hasPhoto = Boolean(photoId);
   const isFormComplete = isRecheckPassed && hasPhoto;
 
   return (
@@ -101,29 +105,21 @@ export const CorrectiveActionScreen: React.FC<CorrectiveActionScreenProps> = ({
           <label className="text-[14px] font-semibold text-[#1B2333] block mb-1.5 px-0.5">
             2. 조치 후 사진을 찍어주세요
           </label>
-          <div
-            onClick={() => setHasPhoto(true)}
-            className={`w-full h-16 rounded-[16px] border border-dashed flex items-center justify-center gap-2 cursor-pointer transition ${
-              hasPhoto
-                ? 'bg-[#E8F0FE] border-[#2B6BF3] text-[#1F52C9]'
-                : 'bg-white border-[#BCD0F7] text-[#6B7690] hover:bg-[#F5F7FB]'
-            }`}
-          >
-            {hasPhoto ? (
-              <>
-                <div className="w-7 h-7 rounded-full bg-[#2B6BF3] text-white flex items-center justify-center">
-                  <Check className="w-4 h-4 stroke-[2.5]" />
-                </div>
-                <span className="text-[14px] font-semibold">사진이 등록되었어요 (다시 찍기 가능)</span>
-              </>
-            ) : (
-              <>
-                <Camera className="w-5 h-5 text-[#2B6BF3]" />
-                <span className="text-[14px] font-medium">눌러서 사진 찍기</span>
-              </>
-            )}
-          </div>
+          <CameraCapture
+            photoId={photoId}
+            label="조치 사진 찍기"
+            onPhotoCaptured={(id) => setPhotoId(id)}
+            onViewPhoto={(url) => setModalPhotoUrl(url)}
+          />
         </div>
+
+        {/* Photo View Modal */}
+        <PhotoViewModal
+          isOpen={Boolean(modalPhotoUrl)}
+          photoUrl={modalPhotoUrl}
+          title="조치 사진 확인"
+          onClose={() => setModalPhotoUrl(null)}
+        />
 
         {/* Step C: Re-measurement */}
         <div>

@@ -35,6 +35,7 @@ export interface CcpTask {
   completedAt?: string;
   completedValue?: string;
   completedMethod?: InputMethod;
+  completedPhotoId?: string;
   hasAnomaly?: boolean;
 }
 
