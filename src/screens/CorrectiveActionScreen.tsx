@@ -39,25 +39,25 @@ export const CorrectiveActionScreen: React.FC<CorrectiveActionScreenProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[32px] pt-4.5 px-4.5 pb-4 select-none overflow-hidden shadow-[0_-10px_25px_rgba(0,0,0,0.06)]">
-      {/* 1. Anomaly Notification Card */}
-      <div className="bg-[#FFF5F5] border-2 border-rose-400 rounded-3xl p-3.5 shadow-sm">
-        <div className="flex items-center gap-2 text-rose-700 font-black text-sm uppercase">
-          <AlertTriangle className="w-5 h-5 text-rose-600" />
-          <span>기준 초과 발생 (즉시 조치 필요)</span>
+    <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[32px] select-none overflow-hidden shadow-[0_-10px_25px_rgba(0,0,0,0.06)]">
+      {/* 2단: 가운데 내용 영역 (스크롤 가능) */}
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-4.5 px-4.5 pb-4 overscroll-contain flex flex-col gap-3">
+        {/* Anomaly Notification Card */}
+        <div className="bg-[#FFF5F5] border-2 border-rose-400 rounded-3xl p-3.5 shadow-sm">
+          <div className="flex items-center gap-2 text-rose-700 font-black text-sm uppercase">
+            <AlertTriangle className="w-5 h-5 text-rose-600" />
+            <span>기준 초과 발생 (즉시 조치 필요)</span>
+          </div>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-[20px] font-black text-[#111827]">{task.title}</span>
+            <span className="text-xs text-rose-800 font-extrabold">기준: {task.standardDesc}</span>
+          </div>
+          <p className="text-sm font-bold text-rose-900 mt-1 bg-white/80 px-2.5 py-1 rounded-xl">
+            1차 측정치: <span className="font-black text-rose-700 text-base">{failedValue}</span> (
+            {initialMethod} 입력)
+          </p>
         </div>
-        <div className="flex items-baseline justify-between mt-1">
-          <span className="text-[20px] font-black text-[#111827]">{task.title}</span>
-          <span className="text-xs text-rose-800 font-extrabold">기준: {task.standardDesc}</span>
-        </div>
-        <p className="text-sm font-bold text-rose-900 mt-1 bg-white/80 px-2.5 py-1 rounded-xl">
-          1차 측정치: <span className="font-black text-rose-700 text-base">{failedValue}</span> (
-          {initialMethod} 입력)
-        </p>
-      </div>
 
-      {/* 2. Middle Steps: Action choice -> Photo -> Recheck */}
-      <div className="my-auto flex flex-col gap-3">
         {/* Step A: 3 Action Selection Buttons */}
         <div>
           <label className="text-sm font-black text-slate-800 block mb-1.5">
@@ -179,12 +179,15 @@ export const CorrectiveActionScreen: React.FC<CorrectiveActionScreenProps> = ({
         </div>
       </div>
 
-      {/* 3. Bottom Action Button */}
-      <div className="pt-2">
+      {/* 3단: 하단 고정 버튼 영역 */}
+      <div
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
+        className="shrink-0 px-4.5 pt-2.5 bg-white border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] z-10"
+      >
         {isRecheckPassed && hasPhoto ? (
           <button
             onClick={handleComplete}
-            className="w-full h-16 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-black text-[20px] rounded-2xl shadow-xl transition flex items-center justify-center gap-2.5 cursor-pointer"
+            className="w-full h-15 sm:h-16 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-black text-[19px] sm:text-[20px] rounded-2xl shadow-xl transition flex items-center justify-center gap-2.5 cursor-pointer"
           >
             <Check className="w-7 h-7 stroke-[3]" />
             <span>조치 완료 (이상 기록 보관)</span>
@@ -192,7 +195,7 @@ export const CorrectiveActionScreen: React.FC<CorrectiveActionScreenProps> = ({
         ) : (
           <button
             disabled
-            className="w-full h-16 bg-slate-200 text-slate-400 font-bold text-base rounded-2xl cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full h-15 sm:h-16 bg-slate-200 text-slate-400 font-bold text-base rounded-2xl cursor-not-allowed flex items-center justify-center gap-2"
           >
             <span>사진 촬영 및 재측정 적합 시 완료 가능</span>
           </button>

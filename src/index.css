@@ -1,16 +1,22 @@
 @import "tailwindcss";
 
 @layer base {
-  body {
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
     font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Hide scrollbar for clean app experience */
+/* Hide scrollbar for clean app experience while enabling touch scrolling */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }

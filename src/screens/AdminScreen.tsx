@@ -1,7 +1,7 @@
 import React from 'react';
 import { CcpTask, InspectionRecord, BranchPerformance } from '../types';
 import { getBranchData } from '../utils/storage';
-import { ShieldCheck, RotateCcw, Building2, Check } from 'lucide-react';
+import { ShieldCheck, RotateCcw, Building2 } from 'lucide-react';
 
 interface AdminScreenProps {
   tasks: CcpTask[];
@@ -29,9 +29,10 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   );
 
   return (
-    <div className="flex-1 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[32px] pt-4.5 px-4.5 pb-4 select-none overflow-y-auto no-scrollbar shadow-[0_-10px_25px_rgba(0,0,0,0.06)]">
-      {/* 1. Header & Summary KPI Cards */}
-      <div>
+    <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[32px] select-none overflow-hidden shadow-[0_-10px_25px_rgba(0,0,0,0.06)]">
+      {/* 2단: 가운데 내용 영역 (스크롤 가능) */}
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-4.5 px-4.5 pb-4 overscroll-contain">
+        {/* Header Title */}
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-[#1C2B4A]">
@@ -44,7 +45,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
           </span>
         </div>
 
-        {/* 3 KPI Cards: Big Numbers for Easy Reading */}
+        {/* 3 KPI Cards */}
         <div className="grid grid-cols-3 gap-2 mb-3">
           {/* Card 1: 수행률 */}
           <div className="bg-[#F1F3FB] p-3 rounded-2xl border border-slate-200/60 text-center">
@@ -88,7 +89,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
           </div>
         </div>
 
-        {/* 2. 5 Branch Stores List (80% 미만은 주황색 표시) */}
+        {/* 5 Branch Stores List (80% 미만은 주황색 표시) */}
         <div className="bg-[#F8FAFC] rounded-2xl p-3.5 border border-slate-200 mb-3">
           <div className="flex items-center justify-between mb-2.5">
             <h3 className="text-sm font-black text-slate-800">지점별 CCP 필수 수행률 (5개 점포)</h3>
@@ -131,9 +132,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
                   <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all duration-500 rounded-full ${
-                        isWarning
-                          ? 'bg-amber-500'
-                          : 'bg-[#1C2B4A]'
+                        isWarning ? 'bg-amber-500' : 'bg-[#1C2B4A]'
                       }`}
                       style={{ width: `${branch.rate}%` }}
                     />
@@ -144,7 +143,7 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
           </div>
         </div>
 
-        {/* 3. Real Inspection History Log */}
+        {/* Real Inspection History Log */}
         <div className="bg-[#F8FAFC] rounded-2xl p-3.5 border border-slate-200">
           <h3 className="text-sm font-black text-slate-800 mb-2 flex items-center justify-between">
             <span>오늘 현장 점검 실시간 기록</span>
@@ -203,8 +202,11 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
         </div>
       </div>
 
-      {/* 4. Bottom Controls */}
-      <div className="pt-3 flex gap-2">
+      {/* 3단: 하단 고정 버튼 영역 */}
+      <div
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
+        className="shrink-0 px-4.5 pt-2.5 bg-white border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] z-10 flex gap-2"
+      >
         <button
           onClick={onResetData}
           className="flex-1 h-14 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-black text-sm rounded-2xl flex items-center justify-center gap-1.5 cursor-pointer transition border border-slate-200"

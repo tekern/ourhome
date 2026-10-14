@@ -267,7 +267,7 @@ export default function App() {
       )}
 
       {/* Screen Router */}
-      <main className="flex-1 flex flex-col overflow-hidden relative">
+      <main className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
         {currentScreen === 'HOME' && (
           <HomeScreen
             tasks={appState.tasks}

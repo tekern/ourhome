@@ -20,7 +20,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   onBack,
 }) => {
   return (
-    <header className="shrink-0 bg-[#16233B] text-white pt-2.5 px-5 pb-5 z-20 select-none">
+    <header
+      style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))' }}
+      className="shrink-0 bg-[#16233B] text-white px-5 pb-4 z-20 select-none"
+    >
       {/* Discreet System Status Bar */}
       <div className="flex items-center justify-between text-xs text-white/70 pb-3 font-medium">
         <div className="flex items-center gap-2">
