@@ -1,0 +1,6 @@
+{
+  "name": "S-Hygiene",
+  "description": "단체급식 조리실 CCP 필수 점검 모바일 웹앱",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
