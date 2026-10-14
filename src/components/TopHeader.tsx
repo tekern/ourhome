@@ -22,10 +22,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   return (
     <header
       style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))' }}
-      className="shrink-0 bg-[#16233B] text-white px-5 pb-4 z-20 select-none"
+      className="shrink-0 bg-[#2B6BF3] text-white px-5 pb-4 z-20 select-none"
     >
       {/* Discreet System Status Bar */}
-      <div className="flex items-center justify-between text-xs text-white/70 pb-3 font-medium">
+      <div className="flex items-center justify-between text-xs text-white/80 pb-2.5 font-medium">
         <div className="flex items-center gap-2">
           <span className="font-bold text-white tabular-nums text-sm">{virtualTime}</span>
         </div>
@@ -35,10 +35,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <button
             onClick={onAdvanceTime}
             title="가상 시간을 30분 앞으로 진행"
-            className="flex items-center gap-1 bg-amber-400 hover:bg-amber-300 active:scale-95 text-[#16233B] text-[11px] font-black px-2 py-0.5 rounded-full shadow transition-transform cursor-pointer"
+            className="flex items-center gap-1 bg-white/20 hover:bg-white/30 active:scale-95 text-white text-[11px] font-semibold px-2 py-0.5 rounded-full transition-transform cursor-pointer"
           >
             <Clock className="w-3 h-3" />
-            <span>+30분</span>
+            <span>데모 +30분</span>
           </button>
 
           <div className="flex items-center gap-1.5 text-white/80">
@@ -49,33 +49,32 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
         </div>
       </div>
 
-      {/* Clean Main Title Bar: Left Store Name ONLY, Right Bell Icon ONLY */}
-      <div className="flex items-center justify-between pt-1">
-        {/* Left: Store Name ONLY */}
-        <div className="flex items-center gap-2">
+      {/* Main Title Bar: Left Store Name ONLY, Right Bell Icon ONLY */}
+      <div className="flex items-center justify-between pt-0.5">
+        <div className="flex items-center gap-1.5">
           {onBack && currentScreen !== 'HOME' ? (
             <button
               onClick={onBack}
               aria-label="이전 화면으로 돌아가기"
-              className="p-1 -ml-1 text-white hover:text-white/80 active:scale-90 transition-transform cursor-pointer"
+              className="p-1 -ml-1 text-white hover:text-white/80 active:scale-95 transition-transform cursor-pointer"
             >
-              <ArrowLeft className="w-7 h-7" />
+              <ArrowLeft className="w-6 h-6 stroke-[2.5]" />
             </button>
           ) : null}
-          <h1 className="text-2xl font-black tracking-tight text-white leading-none">
+          <h1 className="text-[24px] font-bold tracking-tight text-white leading-none">
             강남 본점
           </h1>
         </div>
 
-        {/* Right: Bell Icon ONLY */}
+        {/* Bell Icon ONLY */}
         <button
           onClick={() => onNavigate(currentScreen === 'ADMIN' ? 'HOME' : 'ADMIN')}
           aria-label="알림 및 관제 보기"
-          className="relative p-2 text-white hover:text-white/80 active:scale-90 transition-transform cursor-pointer"
+          className="relative p-1.5 text-white hover:text-white/80 active:scale-95 transition-transform cursor-pointer"
         >
-          <Bell className="w-6 h-6 stroke-[2.2]" />
+          <Bell className="w-6 h-6 stroke-[2]" />
           {urgentCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-[#16233B] animate-pulse" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#E5484D] rounded-full ring-2 ring-[#2B6BF3]" />
           )}
         </button>
       </div>

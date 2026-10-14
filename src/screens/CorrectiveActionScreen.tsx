@@ -38,30 +38,37 @@ export const CorrectiveActionScreen: React.FC<CorrectiveActionScreenProps> = ({
     );
   };
 
+  const isFormComplete = isRecheckPassed && hasPhoto;
+
   return (
-    <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[32px] select-none overflow-hidden shadow-[0_-10px_25px_rgba(0,0,0,0.06)]">
+    <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[28px] select-none overflow-hidden">
       {/* 2단: 가운데 내용 영역 (스크롤 가능) */}
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-4.5 px-4.5 pb-4 overscroll-contain flex flex-col gap-3">
-        {/* Anomaly Notification Card */}
-        <div className="bg-[#FFF5F5] border-2 border-rose-400 rounded-3xl p-3.5 shadow-sm">
-          <div className="flex items-center gap-2 text-rose-700 font-black text-sm uppercase">
-            <AlertTriangle className="w-5 h-5 text-rose-600" />
-            <span>기준 초과 발생 (즉시 조치 필요)</span>
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-4.5 px-4.5 pb-4 overscroll-contain bg-[#F5F7FB] flex flex-col gap-3">
+        {/* Anomaly Notification Card (흰색 카드, 모서리 16px, 부적합 색상은 면적 작게) */}
+        <div className="bg-white rounded-[16px] p-4 border border-[#E8F0FE]">
+          <div className="flex items-center gap-1.5 text-[#E5484D] text-[13px] font-semibold mb-1">
+            <AlertTriangle className="w-4 h-4 stroke-[2.2]" />
+            <span>이상 조치가 필요해요</span>
           </div>
           <div className="flex items-baseline justify-between mt-1">
-            <span className="text-[20px] font-black text-[#111827]">{task.title}</span>
-            <span className="text-xs text-rose-800 font-extrabold">기준: {task.standardDesc}</span>
+            <span className="text-[18px] font-semibold text-[#1B2333]">{task.title}</span>
+            <span className="text-[13px] text-[#6B7690]">{task.standardDesc}</span>
           </div>
-          <p className="text-sm font-bold text-rose-900 mt-1 bg-white/80 px-2.5 py-1 rounded-xl">
-            1차 측정치: <span className="font-black text-rose-700 text-base">{failedValue}</span> (
-            {initialMethod} 입력)
+          <p className="text-[14px] text-[#6B7690] mt-1.5 bg-[#F5F7FB] p-2 rounded-[10px]">
+            처음 측정한 값 <span className="font-bold text-[#E5484D]">{failedValue.replace(/^\+/, '')}</span> ({
+              initialMethod === 'PHOTO'
+                ? '사진으로 기록'
+                : initialMethod === 'DIRECT'
+                ? '직접 입력'
+                : '자동 연결'
+            })
           </p>
         </div>
 
         {/* Step A: 3 Action Selection Buttons */}
         <div>
-          <label className="text-sm font-black text-slate-800 block mb-1.5">
-            1단계: 즉시 조치 방법 선택
+          <label className="text-[14px] font-semibold text-[#1B2333] block mb-1.5 px-0.5">
+            1. 어떻게 조치할지 골라주세요
           </label>
           <div className="grid grid-cols-3 gap-2">
             {[
@@ -75,13 +82,13 @@ export const CorrectiveActionScreen: React.FC<CorrectiveActionScreenProps> = ({
                 <button
                   key={btn.id}
                   onClick={() => setSelectedAction(btn.id as any)}
-                  className={`py-3 px-1 rounded-2xl font-black text-sm flex flex-col items-center justify-center gap-1.5 border-2 transition-all cursor-pointer ${
+                  className={`py-3 px-1 rounded-[14px] text-[14px] font-medium flex flex-col items-center justify-center gap-1.5 border transition cursor-pointer ${
                     isSelected
-                      ? 'bg-[#1C2B4A] text-white border-[#1C2B4A] shadow-md ring-2 ring-indigo-200'
-                      : 'bg-[#F8FAFC] text-slate-700 border-slate-200 hover:bg-slate-100'
+                      ? 'bg-[#E8F0FE] text-[#1F52C9] border-[#2B6BF3] font-semibold'
+                      : 'bg-white text-[#6B7690] border-slate-200 hover:bg-slate-50'
                   }`}
                 >
-                  <Icon className={`w-5 h-5 ${isSelected ? 'text-amber-300' : 'text-slate-500'}`} />
+                  <Icon className={`w-5 h-5 ${isSelected ? 'text-[#2B6BF3]' : 'text-[#6B7690]'}`} />
                   <span>{btn.label}</span>
                 </button>
               );
@@ -91,28 +98,28 @@ export const CorrectiveActionScreen: React.FC<CorrectiveActionScreenProps> = ({
 
         {/* Step B: Photo verification */}
         <div>
-          <label className="text-sm font-black text-slate-800 block mb-1.5">
-            2단계: 조치 사진 증빙 (1장 필수)
+          <label className="text-[14px] font-semibold text-[#1B2333] block mb-1.5 px-0.5">
+            2. 조치 후 사진을 찍어주세요
           </label>
           <div
             onClick={() => setHasPhoto(true)}
-            className={`w-full h-18 rounded-2xl border-2 border-dashed flex items-center justify-center gap-2.5 cursor-pointer transition ${
+            className={`w-full h-16 rounded-[16px] border border-dashed flex items-center justify-center gap-2 cursor-pointer transition ${
               hasPhoto
-                ? 'bg-[#F0FDF4] border-emerald-400 text-emerald-800'
-                : 'bg-[#F1F3FB] border-slate-300 text-slate-700 hover:bg-slate-100'
+                ? 'bg-[#E8F0FE] border-[#2B6BF3] text-[#1F52C9]'
+                : 'bg-white border-[#BCD0F7] text-[#6B7690] hover:bg-[#F5F7FB]'
             }`}
           >
             {hasPhoto ? (
               <>
-                <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center">
-                  <Check className="w-5 h-5 stroke-[3]" />
+                <div className="w-7 h-7 rounded-full bg-[#2B6BF3] text-white flex items-center justify-center">
+                  <Check className="w-4 h-4 stroke-[2.5]" />
                 </div>
-                <span className="text-sm font-black">조치 사진 등록 완료 (탭하여 재촬영)</span>
+                <span className="text-[14px] font-semibold">사진이 등록되었어요 (다시 찍기 가능)</span>
               </>
             ) : (
               <>
-                <Camera className="w-6 h-6 text-indigo-700" />
-                <span className="text-sm font-black">탭하여 조치 확인 사진 촬영</span>
+                <Camera className="w-5 h-5 text-[#2B6BF3]" />
+                <span className="text-[14px] font-medium">눌러서 사진 찍기</span>
               </>
             )}
           </div>
@@ -120,14 +127,14 @@ export const CorrectiveActionScreen: React.FC<CorrectiveActionScreenProps> = ({
 
         {/* Step C: Re-measurement */}
         <div>
-          <label className="text-sm font-black text-slate-800 block mb-1.5">
-            3단계: 조치 후 재측정 (적합 판정 필수)
+          <label className="text-[14px] font-semibold text-[#1B2333] block mb-1.5 px-0.5">
+            3. 다시 측정한 결과를 확인해주세요
           </label>
-          <div className="bg-[#F8FAFC] rounded-2xl p-3 border border-slate-200">
+          <div className="bg-white rounded-[16px] p-3.5 border border-[#E8F0FE]">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold text-slate-500 block">재측정 값</span>
-                <span className="text-3xl font-black text-emerald-700 tabular-nums">
+                <span className="text-[12px] text-[#6B7690] block">다시 측정한 값</span>
+                <span className="text-[28px] font-bold text-[#1B2333] tabular-nums">
                   {recheckValue}
                 </span>
               </div>
@@ -138,39 +145,33 @@ export const CorrectiveActionScreen: React.FC<CorrectiveActionScreenProps> = ({
                     setIsRechecked(true);
                     setRecheckValue(task.id === 'freezer' ? '-19.2℃' : '3.6℃');
                   }}
-                  className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black rounded-xl shadow cursor-pointer"
+                  className="px-3 py-1.5 bg-[#E8F0FE] hover:bg-[#d8e7fe] text-[#1F52C9] text-[13px] font-semibold rounded-[8px] cursor-pointer"
                 >
-                  적합 재측정
+                  적합으로 다시 측정
                 </button>
                 <button
                   onClick={() => {
                     setIsRechecked(true);
                     setRecheckValue(task.id === 'freezer' ? '-15.5℃' : '7.2℃');
                   }}
-                  className="px-3 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-black rounded-xl shadow cursor-pointer"
+                  className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-[#E5484D] text-[13px] font-semibold rounded-[8px] cursor-pointer"
                 >
-                  부적합 재측정
+                  기준 초과로 다시 측정
                 </button>
               </div>
             </div>
 
             {isRechecked && (
-              <div
-                className={`mt-2 py-1.5 px-3 rounded-xl text-xs font-black flex items-center gap-1.5 ${
-                  isRecheckPassed
-                    ? 'bg-emerald-100 text-emerald-900'
-                    : 'bg-rose-100 text-rose-900'
-                }`}
-              >
+              <div className="mt-2 pt-2 border-t border-slate-100 flex items-center gap-1.5">
                 {isRecheckPassed ? (
                   <>
-                    <Check className="w-4 h-4 text-emerald-700 stroke-[3]" />
-                    <span>재측정 결과 정상 적합 (완료 가능)</span>
+                    <Check className="w-4 h-4 text-[#22A06B] stroke-[2.5]" />
+                    <span className="text-[13px] font-semibold text-[#22A06B]">다시 측정한 결과 적합이에요</span>
                   </>
                 ) : (
                   <>
-                    <AlertTriangle className="w-4 h-4 text-rose-700 stroke-[3]" />
-                    <span>재측정 여전히 부적합 (추가 조치 필요)</span>
+                    <AlertTriangle className="w-4 h-4 text-[#E5484D] stroke-[2.5]" />
+                    <span className="text-[13px] font-semibold text-[#E5484D]">다시 측정한 결과도 기준을 넘었어요</span>
                   </>
                 )}
               </div>
@@ -179,25 +180,25 @@ export const CorrectiveActionScreen: React.FC<CorrectiveActionScreenProps> = ({
         </div>
       </div>
 
-      {/* 3단: 하단 고정 버튼 영역 */}
+      {/* 3단: 하단 고정 버튼 (56px, 14px radius, 비활성은 #E3EAF8 배경에 #9FB0D4 글자) */}
       <div
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
-        className="shrink-0 px-4.5 pt-2.5 bg-white border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] z-10"
+        className="shrink-0 px-4.5 pt-2.5 bg-white border-t border-[#E8F0FE] z-10"
       >
-        {isRecheckPassed && hasPhoto ? (
+        {isFormComplete ? (
           <button
             onClick={handleComplete}
-            className="w-full h-15 sm:h-16 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-black text-[19px] sm:text-[20px] rounded-2xl shadow-xl transition flex items-center justify-center gap-2.5 cursor-pointer"
+            className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Check className="w-7 h-7 stroke-[3]" />
-            <span>조치 완료 (이상 기록 보관)</span>
+            <Check className="w-5 h-5 stroke-[2.5]" />
+            <span>조치 완료할게요</span>
           </button>
         ) : (
           <button
             disabled
-            className="w-full h-15 sm:h-16 bg-slate-200 text-slate-400 font-bold text-base rounded-2xl cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full h-14 bg-[#E3EAF8] text-[#9FB0D4] font-medium text-[16px] rounded-[14px] cursor-not-allowed flex items-center justify-center gap-2"
           >
-            <span>사진 촬영 및 재측정 적합 시 완료 가능</span>
+            <span>사진을 찍고 다시 측정하면 끝나요</span>
           </button>
         )}
       </div>

@@ -45,6 +45,9 @@ export interface AtpSpot {
   qrCode: string;
   rluValue?: number;
   passed?: boolean;
+  photoUrl?: string;
+  initialRluValue?: number;
+  hasRetested?: boolean;
 }
 
 export interface BranchPerformance {

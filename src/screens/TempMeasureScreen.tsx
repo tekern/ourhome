@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CcpTask, InputMethod } from '../types';
-import { Bluetooth, Keyboard, Camera, Check, AlertTriangle, Delete } from 'lucide-react';
+import { Bluetooth, Keyboard, Camera, CheckCircle2, AlertTriangle, Delete } from 'lucide-react';
 
 interface TempMeasureScreenProps {
   task: CcpTask;
@@ -65,259 +65,281 @@ export const TempMeasureScreen: React.FC<TempMeasureScreenProps> = ({
     }
   };
 
+  // 기준 범위 가로 막대 계산
+  // 냉장: -2℃ ~ 12℃ (기준: 5℃)
+  // 냉동: -30℃ ~ -10℃ (기준: -18℃)
+  const minRange = isFreezer ? -30 : -2;
+  const maxRange = isFreezer ? -10 : 12;
+  const thresholdPercent = Math.max(0, Math.min(100, ((standardLimit - minRange) / (maxRange - minRange)) * 100));
+  const dotPercent = Math.max(0, Math.min(100, ((currentNum - minRange) / (maxRange - minRange)) * 100));
+
   return (
-    <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[32px] select-none overflow-hidden shadow-[0_-10px_25px_rgba(0,0,0,0.06)]">
-      {/* 2단: 가운데 내용 영역 (내용이 넘쳐도 부드럽게 스크롤 가능, 키패드 및 측정 수치 완벽 표시) */}
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-4.5 px-4.5 pb-4 overscroll-contain">
-        {/* Header & Standard Badge */}
-        <div className="flex items-center justify-between pb-1">
+    <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[28px] select-none overflow-hidden">
+      {/* 2단: 가운데 내용 영역 (스크롤 가능) */}
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-4.5 px-4.5 pb-4 overscroll-contain bg-[#F5F7FB]">
+        {/* Header Title & Standard */}
+        <div className="bg-white rounded-[16px] p-4 mb-3 border border-[#E8F0FE] flex items-center justify-between">
           <div>
-            <span className="text-[13px] font-black text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full">
-              온도 측정 점검
-            </span>
-            <h2 className="text-[22px] font-black text-[#111827] mt-1">{task.title}</h2>
+            <span className="text-[13px] font-medium text-[#6B7690]">온도 점검</span>
+            <h2 className="text-[18px] font-semibold text-[#1B2333] mt-0.5">{task.title}</h2>
           </div>
           <div className="text-right">
-            <span className="text-xs font-bold text-slate-700 block">적합 기준</span>
-            <span className="text-base font-black text-indigo-800 bg-indigo-50 px-2.5 py-1 rounded-xl border border-indigo-200">
+            <span className="text-[13px] text-[#6B7690] block">기준</span>
+            <span className="text-[14px] font-semibold text-[#2B6BF3] bg-[#E8F0FE] px-2.5 py-1 rounded-[8px]">
               {task.standardDesc}
             </span>
           </div>
         </div>
 
-        {/* Three Input Method Tabs */}
-        <div className="grid grid-cols-3 gap-2 p-1.5 bg-[#F1F3FB] rounded-2xl my-2.5">
+        {/* 1. 입력 방식 탭 3개 세그먼트 컨트롤: 자동 연결 / 직접 입력 / 사진 찍기 */}
+        <div className="grid grid-cols-3 gap-1 p-1 bg-white rounded-[14px] mb-3.5 border border-[#E8F0FE]">
           <button
             onClick={() => setMethod('BLE')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[14px] sm:text-[15px] font-black transition cursor-pointer ${
+            className={`py-2 rounded-[10px] text-[14px] font-medium transition cursor-pointer flex items-center justify-center gap-1.5 ${
               method === 'BLE'
-                ? 'bg-[#1C2B4A] text-white shadow-md'
-                : 'text-slate-700 hover:text-slate-900'
+                ? 'bg-[#2B6BF3] text-white font-semibold'
+                : 'text-[#6B7690] hover:text-[#1B2333]'
             }`}
           >
-            <Bluetooth className="w-4 h-4" />
-            <span>자동 BLE</span>
+            <Bluetooth className="w-4 h-4 stroke-[2]" />
+            <span>자동 연결</span>
           </button>
 
           <button
             onClick={() => setMethod('DIRECT')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[14px] sm:text-[15px] font-black transition cursor-pointer ${
+            className={`py-2 rounded-[10px] text-[14px] font-medium transition cursor-pointer flex items-center justify-center gap-1.5 ${
               method === 'DIRECT'
-                ? 'bg-[#1C2B4A] text-white shadow-md'
-                : 'text-slate-700 hover:text-slate-900'
+                ? 'bg-[#2B6BF3] text-white font-semibold'
+                : 'text-[#6B7690] hover:text-[#1B2333]'
             }`}
           >
-            <Keyboard className="w-4 h-4" />
+            <Keyboard className="w-4 h-4 stroke-[2]" />
             <span>직접 입력</span>
           </button>
 
           <button
             onClick={() => setMethod('PHOTO')}
-            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[14px] sm:text-[15px] font-black transition cursor-pointer ${
+            className={`py-2 rounded-[10px] text-[14px] font-medium transition cursor-pointer flex items-center justify-center gap-1.5 ${
               method === 'PHOTO'
-                ? 'bg-[#1C2B4A] text-white shadow-md'
-                : 'text-slate-700 hover:text-slate-900'
+                ? 'bg-[#2B6BF3] text-white font-semibold'
+                : 'text-[#6B7690] hover:text-[#1B2333]'
             }`}
           >
-            <Camera className="w-4 h-4" />
-            <span>사진 촬영</span>
+            <Camera className="w-4 h-4 stroke-[2]" />
+            <span>사진 찍기</span>
           </button>
         </div>
 
-        {/* Measurement Area */}
-        <div className="flex flex-col items-center">
-          {/* Giant Number Display */}
-          <div
-            className={`w-full rounded-3xl p-4 border-2 transition-all flex flex-col items-center shadow-sm ${
-              isPassed
-                ? 'bg-[#F0FDF4] border-emerald-400'
-                : 'bg-[#FFF5F5] border-rose-400 animate-pulse'
-            }`}
-          >
-            <span className="text-[13px] font-bold text-slate-700 uppercase tracking-wider">
-              현재 측정 온도 ({method === 'BLE' ? '무선 센서' : method === 'DIRECT' ? '직접 입력' : '사진 분석'})
-            </span>
+        {/* 2. 중앙 측정값 카드 (흰색 카드, 모서리 16px, 측정 숫자 56px/800) */}
+        <div className="bg-white rounded-[16px] p-5 mb-3 border border-[#E8F0FE] flex flex-col items-center">
+          <span className="text-[13px] font-medium text-[#6B7690]">
+            측정 온도
+          </span>
 
-            <div className="flex items-baseline gap-1 my-1">
-              <span
-                className={`text-6xl sm:text-7xl font-black tabular-nums tracking-tight ${
-                  isPassed ? 'text-emerald-700' : 'text-rose-700'
-                }`}
-              >
-                {formattedDisplay}
-              </span>
-              <span className="text-3xl sm:text-4xl font-black text-slate-600">℃</span>
-            </div>
-
-            {/* Instant Judgment Card */}
-            <div
-              className={`w-full py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 font-black text-[15px] sm:text-[16px] shadow-sm ${
-                isPassed ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
+          {/* 측정 숫자 56px/800 tabular-nums */}
+          <div className="flex items-baseline gap-1 my-2">
+            <span
+              className={`text-[56px] font-extrabold tabular-nums tracking-tight leading-none ${
+                isPassed ? 'text-[#1B2333]' : 'text-[#E5484D]'
               }`}
             >
-              {isPassed ? (
-                <>
-                  <Check className="w-5 h-5 stroke-[3]" />
-                  <span>적합 (기준 {task.standardDesc} 만족)</span>
-                </>
-              ) : (
-                <>
-                  <AlertTriangle className="w-5 h-5 stroke-[3]" />
-                  <span>부적합 (기준 {task.standardDesc} 초과!)</span>
-                </>
-              )}
+              {formattedDisplay}
+            </span>
+            <span className="text-[28px] font-bold text-[#6B7690]">℃</span>
+          </div>
+
+          {/* 판정: 아이콘과 한 줄 문구 (예: "적합이에요", "부적합이에요") */}
+          <div className="flex items-center gap-1.5 mb-4">
+            {isPassed ? (
+              <>
+                <CheckCircle2 className="w-5 h-5 text-[#22A06B] stroke-[2.2]" />
+                <span className="text-[16px] font-semibold text-[#22A06B]">적합이에요</span>
+              </>
+            ) : (
+              <>
+                <AlertTriangle className="w-5 h-5 text-[#E5484D] stroke-[2.2]" />
+                <span className="text-[16px] font-semibold text-[#E5484D]">부적합이에요</span>
+              </>
+            )}
+          </div>
+
+          {/* 3. 기준 범위 가로 막대와 현재 값 점 */}
+          <div className="w-full pt-2">
+            <div className="flex items-center justify-between text-[12px] font-medium text-[#6B7690] mb-1">
+              <span>{minRange}℃</span>
+              <span className="text-[#2B6BF3] font-semibold">{task.standardDesc}</span>
+              <span>{maxRange}℃</span>
+            </div>
+
+            {/* 가로 막대 트랙 */}
+            <div className="relative w-full h-3 bg-[#E8F0FE] rounded-full overflow-hidden">
+              {/* 적합 영역 */}
+              <div
+                className="absolute top-0 bottom-0 left-0 bg-[#BCD0F7]"
+                style={{ width: `${thresholdPercent}%` }}
+              />
+              {/* 부적합 영역 경계선 */}
+              <div
+                className="absolute top-0 bottom-0 w-0.5 bg-[#6B7690]"
+                style={{ left: `${thresholdPercent}%` }}
+              />
+            </div>
+
+            {/* 현재 값 위치 점 */}
+            <div className="relative w-full h-4 -mt-3.5 pointer-events-none">
+              <div
+                className={`absolute top-0 w-4 h-4 rounded-full border-2 border-white transition-all duration-300 -ml-2 ${
+                  isPassed ? 'bg-[#22A06B]' : 'bg-[#E5484D]'
+                }`}
+                style={{ left: `${dotPercent}%` }}
+              />
             </div>
           </div>
+        </div>
 
-          {/* Method-Specific Controls */}
-          <div className="w-full mt-3">
-            {method === 'BLE' && (
-              <div className="bg-[#F8FAFC] rounded-2xl p-3 border border-slate-200">
-                <div className="flex items-center justify-between text-xs text-slate-700 mb-2">
-                  <span className="flex items-center gap-1 font-bold text-indigo-700">
-                    <Bluetooth className="w-4 h-4" />
-                    무선 탐침 PROBE-04 연동됨
-                  </span>
-                  <span className="text-emerald-700 font-extrabold">신호 정상</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setBleValue(isFreezer ? -19.4 : 3.4)}
-                    className={`flex-1 py-2.5 text-xs font-black rounded-xl border transition cursor-pointer ${
-                      isPassed
-                        ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
-                        : 'bg-white text-slate-700 border-slate-300'
-                    }`}
-                  >
-                    적합값 시연 ({isFreezer ? '-19.4℃' : '3.4℃'})
-                  </button>
-                  <button
-                    onClick={() => setBleValue(isFreezer ? -14.2 : 8.2)}
-                    className={`flex-1 py-2.5 text-xs font-black rounded-xl border transition cursor-pointer ${
-                      !isPassed
-                        ? 'bg-rose-600 text-white border-rose-700 shadow-sm'
-                        : 'bg-white text-slate-700 border-slate-300'
-                    }`}
-                  >
-                    부적합 시연 ({isFreezer ? '-14.2℃' : '8.2℃'})
-                  </button>
-                </div>
+        {/* 4. 세그먼트별 입력 도구 영역 */}
+        <div className="bg-white rounded-[16px] p-3.5 border border-[#E8F0FE]">
+          {method === 'BLE' && (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between text-[13px] text-[#6B7690]">
+                <span className="flex items-center gap-1 font-medium text-[#2B6BF3]">
+                  <Bluetooth className="w-4 h-4" />
+                  측정기와 연결됨
+                </span>
+                <span className="text-[#22A06B] font-semibold">정상 연결</span>
               </div>
-            )}
-
-            {method === 'DIRECT' && (
-              <div className="grid grid-cols-4 gap-1.5 w-full bg-[#F1F3FB] p-2 rounded-2xl border border-slate-200">
-                {['1', '2', '3', '-'].map((k) => (
-                  <button
-                    key={k}
-                    onClick={() => handleKeypadPress(k)}
-                    className="h-11 bg-white hover:bg-slate-100 active:bg-slate-200 rounded-xl font-black text-xl text-slate-900 shadow-sm border border-slate-200 flex items-center justify-center cursor-pointer"
-                  >
-                    {k}
-                  </button>
-                ))}
-                {['4', '5', '6', '.'].map((k) => (
-                  <button
-                    key={k}
-                    onClick={() => handleKeypadPress(k)}
-                    className="h-11 bg-white hover:bg-slate-100 active:bg-slate-200 rounded-xl font-black text-xl text-slate-900 shadow-sm border border-slate-200 flex items-center justify-center cursor-pointer"
-                  >
-                    {k}
-                  </button>
-                ))}
-                {['7', '8', '9', '0'].map((k) => (
-                  <button
-                    key={k}
-                    onClick={() => handleKeypadPress(k)}
-                    className="h-11 bg-white hover:bg-slate-100 active:bg-slate-200 rounded-xl font-black text-xl text-slate-900 shadow-sm border border-slate-200 flex items-center justify-center cursor-pointer"
-                  >
-                    {k}
-                  </button>
-                ))}
-                <div className="col-span-4 flex gap-1.5 mt-0.5">
-                  <button
-                    onClick={() => setDirectInput(isFreezer ? '-19.2' : '3.6')}
-                    className="flex-1 h-9 bg-emerald-100 hover:bg-emerald-200 rounded-xl text-xs font-black text-emerald-800 cursor-pointer"
-                  >
-                    기준 적합값
-                  </button>
-                  <button
-                    onClick={() => setDirectInput(isFreezer ? '-13.5' : '7.8')}
-                    className="flex-1 h-9 bg-rose-100 hover:bg-rose-200 rounded-xl text-xs font-black text-rose-800 cursor-pointer"
-                  >
-                    부적합 테스트
-                  </button>
-                  <button
-                    onClick={() => handleKeypadPress('BS')}
-                    className="w-16 h-9 bg-slate-300 hover:bg-slate-400 active:bg-slate-500 rounded-xl flex items-center justify-center text-slate-900 font-black cursor-pointer"
-                  >
-                    <Delete className="w-5 h-5" />
-                  </button>
-                </div>
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => setBleValue(isFreezer ? -19.4 : 3.4)}
+                  className={`flex-1 py-2 rounded-[10px] text-[13px] font-medium border transition cursor-pointer ${
+                    isPassed
+                      ? 'bg-[#E8F0FE] text-[#1F52C9] border-[#BCD0F7]'
+                      : 'bg-white text-[#6B7690] border-slate-200'
+                  }`}
+                >
+                  적합값 넣기 ({isFreezer ? '-19.4℃' : '3.4℃'})
+                </button>
+                <button
+                  onClick={() => setBleValue(isFreezer ? -14.2 : 8.2)}
+                  className={`flex-1 py-2 rounded-[10px] text-[13px] font-medium border transition cursor-pointer ${
+                    !isPassed
+                      ? 'bg-rose-50 text-[#E5484D] border-rose-200'
+                      : 'bg-white text-[#6B7690] border-slate-200'
+                  }`}
+                >
+                  기준 초과값 넣기 ({isFreezer ? '-14.2℃' : '8.2℃'})
+                </button>
               </div>
-            )}
+            </div>
+          )}
 
-            {method === 'PHOTO' && (
-              <div className="bg-[#F8FAFC] rounded-2xl p-3 border border-slate-200 text-center">
-                <div className="w-full h-20 bg-slate-900 rounded-2xl flex items-center justify-center relative overflow-hidden mb-2 text-white">
-                  <div className="text-center">
-                    <span className="text-[12px] text-amber-300 block font-bold">
-                      탐침 눈금 자동 인식
-                    </span>
-                    <span className="text-xl font-black font-mono">
-                      {photoTaken ? `${photoValue}℃ 촬영 완료` : '촬영 대기'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setPhotoTaken(true);
-                      setPhotoValue(isFreezer ? -19.0 : 3.8);
-                    }}
-                    className="flex-1 py-2.5 bg-[#1C2B4A] hover:bg-[#142038] active:scale-95 text-white font-black text-xs rounded-xl flex items-center justify-center gap-1 cursor-pointer"
-                  >
-                    <Camera className="w-4 h-4 text-amber-300" />
-                    <span>적합 촬영 (3.8℃)</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setPhotoTaken(true);
-                      setPhotoValue(isFreezer ? -13.0 : 8.5);
-                    }}
-                    className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-black text-xs rounded-xl flex items-center justify-center gap-1 cursor-pointer"
-                  >
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>부적합 촬영 (8.5℃)</span>
-                  </button>
-                </div>
+          {method === 'DIRECT' && (
+            <div className="grid grid-cols-4 gap-1.5 p-1 bg-[#F5F7FB] rounded-[14px]">
+              {['1', '2', '3', '-'].map((k) => (
+                <button
+                  key={k}
+                  onClick={() => handleKeypadPress(k)}
+                  className="h-10 bg-white hover:bg-slate-50 active:bg-slate-100 rounded-[10px] font-semibold text-[17px] text-[#1B2333] border border-slate-200/60 flex items-center justify-center cursor-pointer"
+                >
+                  {k}
+                </button>
+              ))}
+              {['4', '5', '6', '.'].map((k) => (
+                <button
+                  key={k}
+                  onClick={() => handleKeypadPress(k)}
+                  className="h-10 bg-white hover:bg-slate-50 active:bg-slate-100 rounded-[10px] font-semibold text-[17px] text-[#1B2333] border border-slate-200/60 flex items-center justify-center cursor-pointer"
+                >
+                  {k}
+                </button>
+              ))}
+              {['7', '8', '9', '0'].map((k) => (
+                <button
+                  key={k}
+                  onClick={() => handleKeypadPress(k)}
+                  className="h-10 bg-white hover:bg-slate-50 active:bg-slate-100 rounded-[10px] font-semibold text-[17px] text-[#1B2333] border border-slate-200/60 flex items-center justify-center cursor-pointer"
+                >
+                  {k}
+                </button>
+              ))}
+              <div className="col-span-4 flex gap-1.5 mt-0.5">
+                <button
+                  onClick={() => setDirectInput(isFreezer ? '-19.2' : '3.6')}
+                  className="flex-1 h-8 bg-[#E8F0FE] hover:bg-[#d8e7fe] rounded-[8px] text-[12px] font-medium text-[#1F52C9] cursor-pointer"
+                >
+                  적합값 입력
+                </button>
+                <button
+                  onClick={() => setDirectInput(isFreezer ? '-13.5' : '7.8')}
+                  className="flex-1 h-8 bg-rose-50 hover:bg-rose-100 rounded-[8px] text-[12px] font-medium text-[#E5484D] cursor-pointer"
+                >
+                  부적합값 입력
+                </button>
+                <button
+                  onClick={() => handleKeypadPress('BS')}
+                  className="w-14 h-8 bg-slate-200 hover:bg-slate-300 active:bg-slate-400 rounded-[8px] flex items-center justify-center text-[#1B2333] cursor-pointer"
+                >
+                  <Delete className="w-4 h-4" />
+                </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {method === 'PHOTO' && (
+            <div className="flex flex-col items-center">
+              <div className="w-full h-16 bg-[#F5F7FB] rounded-[12px] border border-dashed border-[#BCD0F7] flex items-center justify-center mb-2 text-[#6B7690]">
+                <span className="text-[13px] font-medium">
+                  {photoTaken ? `${photoValue}℃ 사진 찍기 완료` : '사진을 찍어주세요'}
+                </span>
+              </div>
+
+              <div className="flex gap-2 w-full">
+                <button
+                  onClick={() => {
+                    setPhotoTaken(true);
+                    setPhotoValue(isFreezer ? -19.0 : 3.8);
+                  }}
+                  className="flex-1 py-2 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-95 text-white font-medium text-[13px] rounded-[10px] flex items-center justify-center gap-1 cursor-pointer"
+                >
+                  <Camera className="w-4 h-4" />
+                  <span>적합 사진 찍기 (3.8℃)</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setPhotoTaken(true);
+                    setPhotoValue(isFreezer ? -13.0 : 8.5);
+                  }}
+                  className="flex-1 py-2 bg-[#E5484D] hover:opacity-90 active:scale-95 text-white font-medium text-[13px] rounded-[10px] flex items-center justify-center gap-1 cursor-pointer"
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>기준 초과 사진 찍기 (8.5℃)</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* 3단: 하단 고정 버튼 영역 */}
+      {/* 3단: 하단 고정 버튼 (높이 56px, 모서리 14px, scale 0.98) */}
       <div
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
-        className="shrink-0 px-4.5 pt-2.5 bg-white border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] z-10"
+        className="shrink-0 px-4.5 pt-2.5 bg-white border-t border-[#E8F0FE] z-10"
       >
         {isPassed ? (
           <button
             onClick={handleFinish}
-            className="w-full h-15 sm:h-16 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-black text-[19px] sm:text-[20px] rounded-2xl shadow-xl transition flex items-center justify-center gap-2.5 cursor-pointer"
+            className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Check className="w-7 h-7 stroke-[3]" />
-            <span>적합 판정 완료</span>
+            <CheckCircle2 className="w-5 h-5 stroke-[2.2]" />
+            <span>완료할게요</span>
           </button>
         ) : (
           <button
             onClick={handleFinish}
-            className="w-full h-15 sm:h-16 bg-[#E11D48] hover:bg-[#BE123C] active:scale-[0.98] text-white font-black text-[19px] sm:text-[20px] rounded-2xl shadow-xl transition flex items-center justify-center gap-2.5 cursor-pointer animate-pulse"
+            className="w-full h-14 bg-[#E5484D] hover:opacity-90 active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer"
           >
-            <AlertTriangle className="w-6 h-6 sm:w-7 sm:h-7 stroke-[3]" />
-            <span>부적합 조치 진행하기</span>
+            <AlertTriangle className="w-5 h-5 stroke-[2.2]" />
+            <span>이상 조치하기</span>
           </button>
         )}
       </div>

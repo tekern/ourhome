@@ -21,7 +21,7 @@ import {
 } from './utils/storage';
 import { PhoneFrame } from './components/PhoneFrame';
 import { TopHeader } from './components/TopHeader';
-import { AlertBanner } from './components/AlertBanner';
+import { AlertModal } from './components/AlertModal';
 import { HomeScreen } from './screens/HomeScreen';
 import { QrScanScreen } from './screens/QrScanScreen';
 import { TempMeasureScreen } from './screens/TempMeasureScreen';
@@ -216,10 +216,10 @@ export default function App() {
     const newRecord: InspectionRecord = {
       id: `REC-${Date.now()}`,
       taskId: 'atp-weekly',
-      taskTitle: 'ATP 청결도 주간 검증 (4개소)',
+      taskTitle: '청결도 측정 (ATP 4곳)',
       time: virtualTimeStr,
       method: 'BLE',
-      value: '4개 지점 전원 적합',
+      value: '4곳 모두 적합',
       passed: true,
     };
 
@@ -258,9 +258,9 @@ export default function App() {
         }
       />
 
-      {/* Prominent Vibration Alert Banner (on Home screen when task is urgent) */}
+      {/* 둥근 팝업 알림 (모서리 24px, 종 아이콘, 지금 시작 버튼 하나) */}
       {currentScreen === 'HOME' && urgentTaskInfo && (
-        <AlertBanner
+        <AlertModal
           urgentTask={urgentTaskInfo}
           onAction={(task) => handleSelectTask(task)}
         />
