@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { CcpTask } from '../types';
 import { QrCode, Check, MapPin, ScanLine } from 'lucide-react';
-import { QrCameraScanner } from '../components/QrCameraScanner';
+import { QrCameraScanner, QrCameraScannerRef } from '../components/QrCameraScanner';
 
 interface QrScanScreenProps {
   task: CcpTask;
@@ -9,7 +9,9 @@ interface QrScanScreenProps {
 }
 
 export const QrScanScreen: React.FC<QrScanScreenProps> = ({ task, onScanComplete }) => {
+  const scannerRef = useRef<QrCameraScannerRef | null>(null);
   const [isScanned, setIsScanned] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
 
   const handleScanSuccess = (code: string) => {
     setIsScanned(true);
@@ -17,6 +19,16 @@ export const QrScanScreen: React.FC<QrScanScreenProps> = ({ task, onScanComplete
 
   const handleSimulateScan = () => {
     setIsScanned(true);
+  };
+
+  const handleBottomButtonClick = () => {
+    if (isScanned) {
+      onScanComplete();
+    } else if (!isCameraActive) {
+      scannerRef.current?.startCamera();
+    } else {
+      handleSimulateScan();
+    }
   };
 
   return (
@@ -53,10 +65,12 @@ export const QrScanScreen: React.FC<QrScanScreenProps> = ({ task, onScanComplete
             </div>
           ) : (
             <QrCameraScanner
+              ref={scannerRef}
               expectedCode={task.qrCodeId}
               expectedSpotName={task.title}
               onScanSuccess={handleScanSuccess}
               onFallbackDemo={handleSimulateScan}
+              onCameraActiveChange={setIsCameraActive}
             />
           )}
         </div>
@@ -72,7 +86,7 @@ export const QrScanScreen: React.FC<QrScanScreenProps> = ({ task, onScanComplete
           ) : (
             <div className="bg-white rounded-[12px] py-2 px-3 border border-[#E8F0FE] flex items-center justify-center gap-1.5 text-[13px] font-medium text-[#6B7690]">
               <ScanLine className="w-4 h-4 text-[#2B6BF3]" />
-              <span>카메라로 QR 코드를 비춰주세요</span>
+              <span>{isCameraActive ? '카메라로 QR 코드를 비춰주세요' : '카메라 켜기 또는 버튼을 눌러주세요'}</span>
             </div>
           )}
         </div>
@@ -83,23 +97,22 @@ export const QrScanScreen: React.FC<QrScanScreenProps> = ({ task, onScanComplete
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
         className="shrink-0 px-4.5 pt-2.5 bg-white border-t border-[#E8F0FE] z-10"
       >
-        {isScanned ? (
-          <button
-            onClick={onScanComplete}
-            className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-          >
-            <span>시작하기</span>
-            <Check className="w-5 h-5 stroke-[2.5]" />
-          </button>
-        ) : (
-          <button
-            onClick={handleSimulateScan}
-            className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-          >
-            <QrCode className="w-5 h-5 stroke-[2.2]" />
-            <span>QR 찍고 시작</span>
-          </button>
-        )}
+        <button
+          onClick={handleBottomButtonClick}
+          className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+        >
+          {isScanned ? (
+            <>
+              <span>시작하기</span>
+              <Check className="w-5 h-5 stroke-[2.5]" />
+            </>
+          ) : (
+            <>
+              <QrCode className="w-5 h-5 stroke-[2.2]" />
+              <span>{isCameraActive ? '데모 인식 완료' : 'QR 찍고 시작'}</span>
+            </>
+          )}
+        </button>
       </div>
     </div>
   );
