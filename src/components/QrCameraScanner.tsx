@@ -44,11 +44,6 @@ export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScan
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [warningMessage, setWarningMessage] = useState<string | null>(null);
 
-    // Debug status states (Requirement 6)
-    // States: '대기 중' | '요청 중' | '재생 중' | '오류: [오류명]'
-    const [cameraStatus, setCameraStatus] = useState<string>('대기 중');
-    const [videoDimensions, setVideoDimensions] = useState<string>('0 x 0');
-
     // Cleanly stop camera stream and scanning loop
     const stopCameraStream = useCallback(() => {
       if (animFrameIdRef.current) {
@@ -64,8 +59,6 @@ export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScan
       }
       setMediaStream(null);
       setIsCameraActive(false);
-      setCameraStatus('대기 중');
-      setVideoDimensions('0 x 0');
       onCameraActiveChange?.(false);
     }, [onCameraActiveChange]);
 
@@ -77,8 +70,6 @@ export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScan
 
         if (video && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && canvas) {
           if (video.videoWidth > 0 && video.videoHeight > 0) {
-            setVideoDimensions(`${video.videoWidth} x ${video.videoHeight}`);
-
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -129,7 +120,6 @@ export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScan
     // Call getUserMedia with { video: { facingMode: { ideal: 'environment' } }, audio: false }
     // inside a user button click event (Requirement 4)
     const handleStartCamera = useCallback(async () => {
-      setCameraStatus('요청 중');
       setErrorMessage(null);
       setWarningMessage(null);
 
@@ -144,7 +134,6 @@ export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScan
       }
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setCameraStatus('오류: NotSupported');
         setErrorMessage('카메라를 쓸 수 없어요');
         return;
       }
@@ -160,7 +149,6 @@ export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScan
       } catch (err: any) {
         const errName = err?.name || 'Error';
         console.warn('getUserMedia error:', err);
-        setCameraStatus(`오류: ${errName}`);
         if (errName === 'NotAllowedError') {
           setErrorMessage('카메라 권한이 거부되었어요');
         } else {
@@ -199,33 +187,17 @@ export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScan
           video.autoplay = true;
           video.srcObject = mediaStream;
 
-          const handleMetadata = () => {
-            if (!isCancelled && video.videoWidth > 0 && video.videoHeight > 0) {
-              setVideoDimensions(`${video.videoWidth} x ${video.videoHeight}`);
-            }
-          };
-
-          video.onloadedmetadata = handleMetadata;
-          video.oncanplay = handleMetadata;
-
           await video.play();
 
           if (!isCancelled) {
             setIsCameraActive(true);
-            setCameraStatus('재생 중');
             onCameraActiveChange?.(true);
-
-            if (video.videoWidth > 0 && video.videoHeight > 0) {
-              setVideoDimensions(`${video.videoWidth} x ${video.videoHeight}`);
-            }
-
             startScanLoop();
           }
         } catch (playErr: any) {
           if (!isCancelled) {
             const errName = playErr?.name || 'PlayError';
             console.error('video.play() failed:', playErr);
-            setCameraStatus(`오류: ${errName}`);
             setErrorMessage(`비디오 재생 실패 (${errName})`);
             setIsCameraActive(false);
             onCameraActiveChange?.(false);
@@ -425,15 +397,6 @@ export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScan
             </div>
           )}
         </div>
-
-        {/* ================================================================= */}
-        {/* [DEBUG] 카메라 상태 디버그 문구 (Requirement 6 - 문제 해결 시 이 블록만 삭제 가능) */}
-        {/* ================================================================= */}
-        <div className="mt-2 w-64 px-3 py-1.5 bg-[#F5F7FB] border border-[#BCD0F7] rounded-[8px] text-[11px] font-mono text-[#1F52C9] flex items-center justify-between">
-          <span>카메라: {cameraStatus}</span>
-          <span>영상: {videoDimensions}</span>
-        </div>
-        {/* ================================================================= */}
 
         {/* Warning Notification: When wrong QR code is scanned */}
         {warningMessage && (

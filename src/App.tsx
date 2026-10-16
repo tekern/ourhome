@@ -19,6 +19,7 @@ import {
   getTaskStatus,
   AppState,
 } from './utils/storage';
+import { clearAllPhotosFromIdb } from './utils/photoStorage';
 import { PhoneFrame } from './components/PhoneFrame';
 import { TopHeader } from './components/TopHeader';
 import { AlertModal } from './components/AlertModal';
@@ -54,6 +55,7 @@ export default function App() {
     setAppState((prev) => ({
       ...prev,
       virtualTimeMinutes: prev.virtualTimeMinutes + 30,
+      activeAlertDismissed: false,
     }));
   };
 
@@ -239,8 +241,9 @@ export default function App() {
     setCurrentScreen('HOME');
   };
 
-  // Reset all state for easy demo replay
-  const handleResetData = () => {
+  // Reset all state for easy demo replay and clean screenshots
+  const handleResetData = async () => {
+    await clearAllPhotosFromIdb();
     const fresh = resetState();
     setAppState(fresh);
     setCurrentScreen('HOME');
@@ -256,6 +259,7 @@ export default function App() {
         virtualTime={virtualTimeStr}
         urgentCount={urgentTaskInfo ? 1 : 0}
         onAdvanceTime={handleAdvanceTime}
+        onResetData={handleResetData}
         onNavigate={(screen) => setCurrentScreen(screen)}
         onBack={
           currentScreen !== 'HOME' && currentScreen !== 'ADMIN'
@@ -265,10 +269,13 @@ export default function App() {
       />
 
       {/* 둥근 팝업 알림 (모서리 24px, 종 아이콘, 지금 시작 버튼 하나) */}
-      {currentScreen === 'HOME' && urgentTaskInfo && (
+      {currentScreen === 'HOME' && urgentTaskInfo && !appState.activeAlertDismissed && (
         <AlertModal
           urgentTask={urgentTaskInfo}
           onAction={(task) => handleSelectTask(task)}
+          onClose={() =>
+            setAppState((prev) => ({ ...prev, activeAlertDismissed: true }))
+          }
         />
       )}
 

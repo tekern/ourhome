@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wifi, Battery, Signal, ArrowLeft, Bell, Clock } from 'lucide-react';
+import { Wifi, Battery, Signal, ArrowLeft, Bell, Clock, RotateCcw } from 'lucide-react';
 import { ScreenType } from '../types';
 
 interface TopHeaderProps {
@@ -7,6 +7,7 @@ interface TopHeaderProps {
   virtualTime: string;
   urgentCount: number;
   onAdvanceTime: () => void;
+  onResetData?: () => void;
   onNavigate: (screen: ScreenType) => void;
   onBack?: () => void;
 }
@@ -16,6 +17,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   virtualTime,
   urgentCount,
   onAdvanceTime,
+  onResetData,
   onNavigate,
   onBack,
 }) => {
@@ -30,7 +32,19 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <span className="font-bold text-white tabular-nums text-sm">{virtualTime}</span>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
+          {/* Quick Reset button for taking fresh screenshots */}
+          {onResetData && (
+            <button
+              onClick={onResetData}
+              title="측정 결과 데이터 초기화 (처음 상태로)"
+              className="flex items-center gap-1 bg-white/20 hover:bg-white/30 active:scale-95 text-white text-[11px] font-semibold px-2 py-0.5 rounded-full transition-transform cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>초기화</span>
+            </button>
+          )}
+
           {/* Quick Demo +30m button */}
           <button
             onClick={onAdvanceTime}

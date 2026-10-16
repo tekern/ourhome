@@ -1,6 +1,6 @@
 import { CcpTask, InspectionRecord, TaskStatus, BranchPerformance, AtpSpot } from '../types';
 
-const STORAGE_KEY = 's_hygiene_state_v3';
+const STORAGE_KEY = 's_hygiene_state_clean_v1';
 
 export const INITIAL_TASKS: CcpTask[] = [
   {
@@ -82,6 +82,22 @@ export function getTaskStatus(task: CcpTask, currentMinutes: number): TaskStatus
 }
 
 export function getInitialState(): AppState {
+  // Clear legacy caches across all past versions
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('s_hygiene_state_') || key.includes('s_hygiene')) && key !== STORAGE_KEY) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+    } catch (e) {
+      // ignore
+    }
+  }
+
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
@@ -94,14 +110,16 @@ export function getInitialState(): AppState {
     console.error('Failed to load state from localStorage', e);
   }
 
-  return {
+  const fresh: AppState = {
     virtualTimeMinutes: 8 * 60 + 30, // 08:30 시작
     tasks: INITIAL_TASKS,
     records: [],
     atpCompletedThisWeek: false,
     atpSpots: INITIAL_ATP_SPOTS,
-    activeAlertDismissed: false,
+    activeAlertDismissed: true, // 스크린샷 촬영을 위해 초기 홈 화면이 바로 보이도록 설정
   };
+  saveState(fresh);
+  return fresh;
 }
 
 export function saveState(state: AppState): void {
@@ -113,13 +131,22 @@ export function saveState(state: AppState): void {
 }
 
 export function resetState(): AppState {
+  // Clear old storage keys
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {
+      // ignore
+    }
+  }
+
   const fresh: AppState = {
     virtualTimeMinutes: 8 * 60 + 30,
     tasks: INITIAL_TASKS,
     records: [],
     atpCompletedThisWeek: false,
     atpSpots: INITIAL_ATP_SPOTS,
-    activeAlertDismissed: false,
+    activeAlertDismissed: true,
   };
   saveState(fresh);
   return fresh;

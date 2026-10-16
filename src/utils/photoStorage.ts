@@ -160,3 +160,21 @@ export async function deletePhotoFromIdb(id: string): Promise<void> {
     console.error('Failed to delete photo from IndexedDB', err);
   }
 }
+
+/**
+ * Clears all photos from IndexedDB
+ */
+export async function clearAllPhotosFromIdb(): Promise<void> {
+  try {
+    const db = await getDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.clear();
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  } catch (err) {
+    console.error('Failed to clear photos from IndexedDB', err);
+  }
+}
