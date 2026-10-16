@@ -48,65 +48,65 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
   return (
     <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[28px] select-none overflow-hidden relative">
       {/* 2단: 가운데 내용 영역 (스크롤 가능) */}
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-4.5 px-4.5 pb-4 overscroll-contain bg-[#F5F7FB]">
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-5 px-4.5 pb-4 overscroll-contain bg-[#F5F7FB]">
         {/* Title & Actions */}
-        <div className="flex items-center justify-between mb-3 px-0.5">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-[10px] bg-[#E8F0FE] flex items-center justify-center text-[#2B6BF3]">
-              <Building2 className="w-4 h-4" />
+        <div className="flex items-center justify-between mb-3.5 px-0.5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-[12px] bg-[#E8F0FE] flex items-center justify-center text-[#2B6BF3]">
+              <Building2 className="w-5 h-5" />
             </div>
-            <h2 className="text-[20px] font-bold text-[#1B2333]">점포별 점검 현황</h2>
+            <h2 className="text-[22px] font-extrabold text-[#1B2333] tracking-tight">점포별 현황</h2>
           </div>
 
           {/* [QR 코드 보기] 메뉴 버튼 */}
           <button
             onClick={() => setShowQrPage(true)}
-            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#2B6BF3] bg-[#E8F0FE] hover:bg-[#d8e7fe] active:scale-95 px-3 py-1 rounded-full transition cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 text-[13px] font-bold text-[#2B6BF3] bg-[#E8F0FE] hover:bg-[#d8e7fe] active:scale-95 px-3.5 py-1.5 rounded-full transition cursor-pointer shadow-2xs"
           >
-            <QrCode className="w-3.5 h-3.5" />
+            <QrCode className="w-4 h-4" />
             <span>QR 코드 보기</span>
           </button>
         </div>
 
-        {/* 3 KPI Cards: 흰색, 모서리 16px, 그림자 없음 */}
-        <div className="grid grid-cols-3 gap-2 mb-3.5">
+        {/* 3 KPI Cards */}
+        <div className="grid grid-cols-3 gap-2 mb-4">
           {/* Card 1: 수행률 */}
-          <div className="bg-white p-3 rounded-[16px] border border-[#E8F0FE] text-center">
-            <span className="text-[12px] font-medium text-[#6B7690] block">우리 점포</span>
-            <span className="text-[22px] font-bold text-[#2B6BF3] tabular-nums mt-0.5 block">
+          <div className="bg-white p-3.5 rounded-[18px] border border-[#E8F0FE] text-center shadow-2xs">
+            <span className="text-[13px] font-semibold text-[#64748B] block">우리 점포</span>
+            <span className="text-[26px] font-black text-[#2B6BF3] tabular-nums mt-0.5 block">
               {currentStoreRate}%
             </span>
-            <span className="text-[11px] text-[#6B7690] font-medium block mt-0.5">
-              {completedCount}/{totalTasks}건 완료
+            <span className="text-[12px] text-[#64748B] font-bold block mt-0.5">
+              {completedCount}/{totalTasks}건
             </span>
           </div>
 
           {/* Card 2: 미체크 (관리자 화면은 미체크 유지) */}
-          <div className="bg-white p-3 rounded-[16px] border border-[#E8F0FE] text-center">
-            <span className="text-[12px] font-medium text-[#6B7690] block">미체크</span>
+          <div className="bg-white p-3.5 rounded-[18px] border border-[#E8F0FE] text-center shadow-2xs">
+            <span className="text-[13px] font-semibold text-[#64748B] block">미체크</span>
             <span
-              className={`text-[22px] font-bold tabular-nums mt-0.5 block ${
+              className={`text-[26px] font-black tabular-nums mt-0.5 block ${
                 missedCount > 0 ? 'text-[#F08A24]' : 'text-[#1B2333]'
               }`}
             >
               {missedCount}건
             </span>
-            <span className="text-[11px] text-[#6B7690] font-medium block mt-0.5">
-              {missedCount === 0 ? '모두 완료' : '점검 필요'}
+            <span className="text-[12px] text-[#64748B] font-bold block mt-0.5">
+              {missedCount === 0 ? '완료' : '점검 필요'}
             </span>
           </div>
 
           {/* Card 3: 이상 건수 */}
-          <div className="bg-white p-3 rounded-[16px] border border-[#E8F0FE] text-center">
-            <span className="text-[12px] font-medium text-[#6B7690] block">이상 건수</span>
+          <div className="bg-white p-3.5 rounded-[18px] border border-[#E8F0FE] text-center shadow-2xs">
+            <span className="text-[13px] font-semibold text-[#64748B] block">이상 건수</span>
             <span
-              className={`text-[22px] font-bold tabular-nums mt-0.5 block ${
+              className={`text-[26px] font-black tabular-nums mt-0.5 block ${
                 anomalyCount > 0 ? 'text-[#E5484D]' : 'text-[#1B2333]'
               }`}
             >
               {anomalyCount}건
             </span>
-            <span className="text-[11px] text-[#6B7690] font-medium block mt-0.5">
+            <span className="text-[12px] text-[#64748B] font-bold block mt-0.5">
               {anomalyCount > 0 ? '조치 완료' : '이상 없음'}
             </span>
           </div>
@@ -254,24 +254,24 @@ export const AdminScreen: React.FC<AdminScreenProps> = ({
         onClose={() => setModalPhotoUrl(null)}
       />
 
-      {/* 3단: 하단 고정 버튼 (높이 56px, 모서리 14px, scale 0.98) */}
+      {/* 3단: 하단 고정 버튼 (더 높고 큼직한 버튼, 글씨 18px) */}
       <div
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
-        className="shrink-0 px-4.5 pt-2.5 bg-white border-t border-[#E8F0FE] z-10 flex gap-2"
+        className="shrink-0 px-4.5 pt-3 bg-white border-t border-[#E8F0FE] z-10 flex gap-2.5"
       >
         <button
           onClick={onResetData}
-          className="flex-1 h-14 bg-[#F5F7FB] hover:bg-slate-100 active:scale-[0.98] text-[#6B7690] font-semibold text-[15px] rounded-[14px] flex items-center justify-center gap-1.5 cursor-pointer transition border border-slate-200"
+          className="flex-1 h-15 bg-[#F5F7FB] hover:bg-slate-100 active:scale-[0.98] text-[#64748B] font-bold text-[16px] rounded-[16px] flex items-center justify-center gap-2 cursor-pointer transition border border-slate-200"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-4.5 h-4.5" />
           <span>기록 초기화</span>
         </button>
 
         <button
           onClick={onReturnToHome}
-          className="flex-1 h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[16px] rounded-[14px] flex items-center justify-center gap-2 cursor-pointer transition"
+          className="flex-1 h-15 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-extrabold text-[18px] rounded-[16px] flex items-center justify-center gap-2 cursor-pointer transition shadow-xs"
         >
-          <ShieldCheck className="w-5 h-5 stroke-[2.2]" />
+          <ShieldCheck className="w-5 h-5 stroke-[2.4]" />
           <span>오늘 할 일로 가기</span>
         </button>
       </div>

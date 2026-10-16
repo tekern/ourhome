@@ -39,21 +39,21 @@ export const AlertModal: React.FC<AlertModalProps> = ({ urgentTask, onAction, on
         </div>
 
         {/* 점검 시각 */}
-        <span className="text-[13px] font-medium text-[#6B7690] mb-1">
+        <span className="text-[15px] font-bold text-[#64748B] mb-1">
           {task.hour < 12
             ? `오전 ${task.hour}:${String(task.minute).padStart(2, '0')}`
             : `오후 ${task.hour === 12 ? 12 : task.hour - 12}:${String(task.minute).padStart(2, '0')}`} 점검
         </span>
 
-        {/* 문구: 친근한 존댓말 */}
-        <h3 className="text-[20px] font-bold text-[#1B2333] mb-6 leading-snug">
+        {/* 문구 */}
+        <h3 className="text-[22px] font-extrabold text-[#1B2333] mb-6 leading-snug">
           {task.title} 시간이에요
         </h3>
 
         {/* 큰 [지금 시작] 버튼 하나 */}
         <button
           onClick={() => onAction(task)}
-          className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition cursor-pointer flex items-center justify-center"
+          className="w-full h-15 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-extrabold text-[20px] rounded-[16px] transition cursor-pointer flex items-center justify-center shadow-xs"
         >
           지금 시작
         </button>

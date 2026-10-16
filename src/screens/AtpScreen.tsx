@@ -135,30 +135,24 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
       />
 
       {/* 2단: 가운데 내용 영역 */}
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-4.5 px-4.5 pb-4 overscroll-contain bg-[#F5F7FB] flex flex-col gap-3">
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-5 px-4.5 pb-4 overscroll-contain bg-[#F5F7FB] flex flex-col gap-3.5">
         {/* Header Info */}
-        <div className="bg-white rounded-[16px] p-4 border border-[#E8F0FE] flex items-center justify-between">
-          <div>
-            <span className="text-[13px] font-medium text-[#6B7690]">주 1회</span>
-            <h2 className="text-[18px] font-semibold text-[#1B2333] mt-0.5">청결도 측정 (ATP)</h2>
-          </div>
-          <div className="text-right">
-            <span className="text-[13px] text-[#6B7690] block">기준</span>
-            <span className="text-[14px] font-semibold text-[#22A06B] bg-emerald-50 px-2.5 py-1 rounded-[8px]">
-              200 이하면 적합
-            </span>
-          </div>
+        <div className="bg-white rounded-[18px] p-4.5 border border-[#E8F0FE] flex items-center justify-between">
+          <h2 className="text-[22px] font-extrabold text-[#1B2333] tracking-tight">청결도 측정</h2>
+          <span className="text-[16px] font-bold text-[#16A34A] bg-emerald-50 px-3.5 py-1.5 rounded-[10px]">
+            200 이하 적합
+          </span>
         </div>
 
         {/* 4 Fixed Spots List */}
-        <div className="flex flex-col gap-2.5">
-          <div className="flex items-center justify-between px-1 text-[13px] font-medium text-[#6B7690]">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between px-1 text-[16px] font-bold text-[#1B2333]">
             <span>정해진 4곳</span>
-            <span className="text-[#2B6BF3] font-semibold">{completedSpotsCount} / 4 완료</span>
+            <span className="text-[#2B6BF3]">{completedSpotsCount} / 4 완료</span>
           </div>
 
           {photoError && (
-            <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-[12px] text-[#E5484D] text-[13px] font-medium">
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-[14px] text-[#E5484D] text-[14px] font-bold">
               {photoError}
             </div>
           )}
@@ -172,37 +166,37 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
               <div
                 key={spot.id}
                 onClick={() => setActiveSpotIndex(idx)}
-                className={`p-3.5 rounded-[16px] border transition cursor-pointer flex flex-col gap-2 ${
+                className={`p-4 rounded-[18px] border transition cursor-pointer flex flex-col gap-2.5 ${
                   isExceeded
-                    ? 'bg-rose-50/60 border-rose-200'
+                    ? 'bg-rose-50/70 border-rose-200 shadow-xs'
                     : isDone
                     ? 'bg-white border-[#E8F0FE]'
                     : isCurrent
-                    ? 'bg-[#E8F0FE] border-[#BCD0F7]'
+                    ? 'bg-[#E8F0FE] border-[#BCD0F7] shadow-xs'
                     : 'bg-white border-transparent hover:border-[#E8F0FE]'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`w-7 h-7 rounded-[8px] flex items-center justify-center font-bold text-[13px] shrink-0 ${
+                      className={`w-9 h-9 rounded-[10px] flex items-center justify-center font-black text-[16px] shrink-0 ${
                         isExceeded
                           ? 'bg-[#E5484D] text-white'
                           : isDone
                           ? 'bg-[#E8F0FE] text-[#1F52C9]'
                           : isCurrent
                           ? 'bg-[#2B6BF3] text-white'
-                          : 'bg-[#F5F7FB] text-[#6B7690]'
+                          : 'bg-[#F5F7FB] text-[#64748B]'
                       }`}
                     >
                       {spot.id}
                     </div>
 
                     <div className="min-w-0">
-                      <h3 className="text-[16px] font-semibold text-[#1B2333] truncate leading-tight">
+                      <h3 className="text-[18px] font-bold text-[#1B2333] truncate leading-tight">
                         {spot.name}
                       </h3>
-                      <p className="text-[13px] font-medium text-[#6B7690] truncate mt-0.5">
+                      <p className="text-[14px] font-semibold text-[#64748B] truncate mt-0.5">
                         {spot.zone}
                       </p>
                     </div>
@@ -211,53 +205,53 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
                   {/* Measurement Status */}
                   <div className="shrink-0 text-right">
                     {isDone ? (
-                      <div className="flex items-center gap-1.5 font-semibold text-[14px]">
+                      <div className="flex items-center gap-2 font-bold text-[16px]">
                         <span
-                          className={`tabular-nums ${
-                            spot.passed ? 'text-[#22A06B]' : 'text-[#E5484D]'
+                          className={`tabular-nums text-[18px] ${
+                            spot.passed ? 'text-[#16A34A]' : 'text-[#E5484D]'
                           }`}
                         >
                           {spot.rluValue}
                         </span>
 
                         {spot.passed ? (
-                          <div className="w-6 h-6 rounded-full bg-[#2B6BF3] text-white flex items-center justify-center">
-                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                          <div className="w-8 h-8 rounded-full bg-[#2B6BF3] text-white flex items-center justify-center shadow-xs">
+                            <Check className="w-5 h-5 stroke-[2.8]" />
                           </div>
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-[#E5484D] text-white flex items-center justify-center">
-                            <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5]" />
+                          <div className="w-8 h-8 rounded-full bg-[#E5484D] text-white flex items-center justify-center shadow-xs">
+                            <AlertTriangle className="w-5 h-5 stroke-[2.8]" />
                           </div>
                         )}
                       </div>
                     ) : isCurrent ? (
-                      <span className="text-[12px] font-semibold text-[#1F52C9] bg-[#BCD0F7]/40 px-2 py-0.5 rounded-[6px]">
+                      <span className="text-[14px] font-bold text-[#1F52C9] bg-[#BCD0F7]/50 px-3 py-1 rounded-[8px]">
                         지금 측정
                       </span>
                     ) : (
-                      <div className="w-6 h-6 rounded-full border-2 border-dashed border-[#BCD0F7] flex items-center justify-center text-[#BCD0F7]">
-                        <Check className="w-3 h-3 stroke-[2]" />
+                      <div className="w-8 h-8 rounded-full border-2 border-dashed border-[#BCD0F7] flex items-center justify-center text-[#BCD0F7]">
+                        <Check className="w-4 h-4 stroke-[2]" />
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* Individual Photo Button */}
-                <div className="flex items-center justify-between pt-1 border-t border-slate-100/80">
+                <div className="flex items-center justify-between pt-1.5 border-t border-slate-100/90">
                   <div className="flex items-center gap-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleTriggerPhotoForSpot(spot.id);
                       }}
-                      className={`flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-[8px] transition cursor-pointer ${
+                      className={`flex items-center gap-1.5 text-[14px] font-semibold px-3 py-1.5 rounded-[10px] transition cursor-pointer ${
                         spot.photoUrl
-                          ? 'bg-[#E8F0FE] text-[#1F52C9] font-semibold'
-                          : 'bg-[#F5F7FB] text-[#6B7690] hover:bg-slate-200'
+                          ? 'bg-[#E8F0FE] text-[#1F52C9] font-bold'
+                          : 'bg-[#F5F7FB] text-[#64748B] hover:bg-slate-200'
                       }`}
                     >
-                      <Camera className="w-3.5 h-3.5" />
-                      <span>{spot.photoUrl ? '사진 등록 완료 (다시 찍기)' : '사진 찍기'}</span>
+                      <Camera className="w-4 h-4" />
+                      <span>{spot.photoUrl ? '사진 다시 찍기' : '사진 찍기'}</span>
                     </button>
 
                     {spot.photoUrl && (
@@ -266,42 +260,42 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
                           e.stopPropagation();
                           if (spot.photoUrl) handleOpenPhotoModal(spot.photoUrl);
                         }}
-                        className="text-[12px] text-[#2B6BF3] hover:underline font-medium flex items-center gap-0.5 cursor-pointer"
+                        className="text-[14px] text-[#2B6BF3] hover:underline font-bold flex items-center gap-1 cursor-pointer"
                       >
-                        <Eye className="w-3 h-3" />
+                        <Eye className="w-4 h-4" />
                         <span>사진 보기</span>
                       </button>
                     )}
                   </div>
 
                   {isExceeded && (
-                    <span className="text-[12px] font-semibold text-[#E5484D] flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" />
-                      기준 초과 (200 넘음)
+                    <span className="text-[14px] font-bold text-[#E5484D] flex items-center gap-1">
+                      <AlertTriangle className="w-4 h-4" />
+                      기준 초과
                     </span>
                   )}
                   {spot.hasRetested && (
-                    <span className="text-[12px] font-semibold text-[#22A06B]">
-                      다시 씻은 후 적합 (45)
+                    <span className="text-[14px] font-bold text-[#16A34A]">
+                      다시 씻은 후 적합
                     </span>
                   )}
                 </div>
 
                 {/* Spot 2 Retest Action */}
                 {isExceeded && isCurrent && (
-                  <div className="mt-1 bg-white p-2.5 rounded-[12px] border border-rose-200 flex items-center justify-between">
-                    <span className="text-[12px] text-[#6B7690]">
-                      처음 측정한 값 {spot.initialRluValue} (기준 초과)
+                  <div className="mt-1 bg-white p-3 rounded-[14px] border border-rose-200 flex items-center justify-between">
+                    <span className="text-[14px] font-semibold text-[#64748B]">
+                      측정값 {spot.initialRluValue} (초과)
                     </span>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRetestSpot2(spot.id);
                       }}
-                      className="bg-[#2B6BF3] hover:bg-[#1F52C9] text-white text-[12px] font-semibold px-2.5 py-1 rounded-[8px] flex items-center gap-1 cursor-pointer"
+                      className="bg-[#2B6BF3] hover:bg-[#1F52C9] text-white text-[14px] font-bold px-3 py-1.5 rounded-[10px] flex items-center gap-1.5 cursor-pointer shadow-xs"
                     >
-                      <RotateCcw className="w-3 h-3" />
-                      <span>다시 씻고 측정하기 (45)</span>
+                      <RotateCcw className="w-4 h-4" />
+                      <span>다시 씻고 측정하기</span>
                     </button>
                   </div>
                 )}
@@ -311,43 +305,38 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
 
           {/* Active Spot Action Card */}
           {currentSpot && (
-            <div className="mt-1 bg-white p-4 rounded-[16px] border border-[#E8F0FE] flex flex-col gap-2.5">
+            <div className="mt-1 bg-white p-4.5 rounded-[18px] border border-[#E8F0FE] flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-[14px] font-semibold text-[#1B2333]">
+                  <span className="text-[17px] font-bold text-[#1B2333]">
                     {currentSpot.id}번 {currentSpot.name}
                   </span>
-                  <p className="text-[12px] text-[#6B7690]">
-                    {currentSpot.id === 2
-                      ? '두 번째 곳: 측정 시 기준을 넘는 값(320)이 나와요'
-                      : '측정기와 연결 중이에요'}
-                  </p>
                 </div>
 
                 <button
                   onClick={() => handleTriggerPhotoForSpot(currentSpot.id)}
-                  className={`flex items-center gap-1 text-[13px] px-3 py-1.5 rounded-[8px] font-medium transition cursor-pointer ${
+                  className={`flex items-center gap-1 text-[14px] px-3.5 py-1.5 rounded-[10px] font-bold transition cursor-pointer ${
                     currentSpot.photoUrl
-                      ? 'bg-[#E8F0FE] text-[#1F52C9] font-semibold'
+                      ? 'bg-[#E8F0FE] text-[#1F52C9]'
                       : 'bg-[#F5F7FB] text-[#2B6BF3] hover:bg-[#E8F0FE]'
                   }`}
                 >
                   <Camera className="w-4 h-4" />
-                  <span>{currentSpot.photoUrl ? '사진 등록 완료' : '사진 찍기'}</span>
+                  <span>{currentSpot.photoUrl ? '사진 완료' : '사진 찍기'}</span>
                 </button>
               </div>
 
-              {/* QR 찍고 측정하기 버튼: Opens QR Camera Scanner Modal */}
+              {/* QR 찍고 측정하기 버튼 */}
               <button
                 onClick={() => setIsScanningQr(true)}
                 disabled={isMeasuring}
-                className="w-full py-3 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-semibold text-[15px] rounded-[12px] flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
+                className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-extrabold text-[18px] rounded-[14px] flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
               >
-                <QrCode className="w-4 h-4" />
+                <QrCode className="w-5 h-5" />
                 <span>
                   {isMeasuring
-                    ? '측정값을 가져오고 있어요...'
-                    : 'QR 찍고 측정하기'}
+                    ? '측정 중...'
+                    : `${currentSpot.name} 측정하기`}
                 </span>
               </button>
             </div>
@@ -361,18 +350,18 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
           <div className="w-full max-w-[340px] bg-white rounded-[24px] p-5 shadow-2xl flex flex-col items-center border border-slate-100">
             <div className="flex items-center justify-between w-full mb-3">
               <div>
-                <span className="text-[12px] font-semibold text-[#2B6BF3] bg-[#E8F0FE] px-2 py-0.5 rounded-full">
+                <span className="text-[13px] font-bold text-[#2B6BF3] bg-[#E8F0FE] px-2.5 py-0.5 rounded-full">
                   ATP {currentSpot.id}번
                 </span>
-                <h3 className="text-[17px] font-bold text-[#1B2333] mt-0.5">
-                  {currentSpot.name} QR 스캔
+                <h3 className="text-[19px] font-bold text-[#1B2333] mt-1">
+                  {currentSpot.name}
                 </h3>
               </div>
               <button
                 onClick={() => setIsScanningQr(false)}
                 className="p-1.5 text-[#6B7690] hover:text-[#1B2333] active:scale-95 transition rounded-full cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
@@ -400,23 +389,23 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
         onClose={() => setModalPhotoUrl(null)}
       />
 
-      {/* 3단: 하단 고정 버튼 */}
+      {/* 3단: 하단 고정 버튼 (더 높고 큼직한 버튼, 글씨 20px) */}
       <div
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
-        className="shrink-0 px-4.5 pt-2.5 bg-white border-t border-[#E8F0FE] z-10"
+        className="shrink-0 px-4.5 pt-3 bg-white border-t border-[#E8F0FE] z-10"
       >
         {allSpotsMeasured ? (
           <button
             onClick={handleFinishAll}
-            className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+            className="w-full h-15 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-extrabold text-[20px] rounded-[16px] transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
           >
-            <Check className="w-5 h-5 stroke-[2.5]" />
+            <Check className="w-6 h-6 stroke-[3]" />
             <span>완료할게요</span>
           </button>
         ) : (
           <button
             disabled
-            className="w-full h-14 bg-[#E3EAF8] text-[#9FB0D4] font-medium text-[16px] rounded-[14px] cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full h-15 bg-[#E3EAF8] text-[#9FB0D4] font-bold text-[18px] rounded-[16px] cursor-not-allowed flex items-center justify-center gap-2"
           >
             <span>4곳을 모두 측정하면 끝나요</span>
           </button>

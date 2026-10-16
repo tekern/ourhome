@@ -59,69 +59,56 @@ export const SanitizeScreen: React.FC<SanitizeScreenProps> = ({ task, onComplete
   return (
     <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[28px] select-none overflow-hidden">
       {/* 2단: 가운데 내용 영역 (스크롤 가능) */}
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-4.5 px-4.5 pb-4 overscroll-contain bg-[#F5F7FB] flex flex-col gap-3">
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-5 px-4.5 pb-4 overscroll-contain bg-[#F5F7FB] flex flex-col gap-3.5">
         {/* Header Standard Info */}
-        <div className="bg-white rounded-[16px] p-4 border border-[#E8F0FE] flex items-center justify-between">
-          <div>
-            <span className="text-[13px] font-medium text-[#6B7690]">소독</span>
-            <h2 className="text-[18px] font-semibold text-[#1B2333] mt-0.5">{task.title}</h2>
-          </div>
-          <div className="text-right">
-            <span className="text-[13px] text-[#6B7690] block">기준</span>
-            <span className="text-[14px] font-semibold text-[#2B6BF3] bg-[#E8F0FE] px-2.5 py-1 rounded-[8px]">
-              소독액 100ppm
-            </span>
-          </div>
+        <div className="bg-white rounded-[18px] p-4.5 border border-[#E8F0FE] flex items-center justify-between">
+          <h2 className="text-[22px] font-extrabold text-[#1B2333] tracking-tight">{task.title}</h2>
+          <span className="text-[16px] font-bold text-[#2B6BF3] bg-[#E8F0FE] px-3.5 py-1.5 rounded-[10px]">
+            소독액 100ppm
+          </span>
         </div>
 
         {/* 1. Timer Card */}
-        <div className="bg-white rounded-[16px] p-4.5 border border-[#E8F0FE] flex flex-col items-center">
-          <div className="w-full flex items-center justify-between text-xs mb-1">
-            <span className="font-semibold text-[#1B2333] text-[14px] flex items-center gap-1.5">
-              <Timer className="w-4 h-4 text-[#2B6BF3]" />
-              1. 소독액에 5분 담그기
+        <div className="bg-white rounded-[18px] p-5 border border-[#E8F0FE] flex flex-col items-center">
+          <div className="w-full flex items-center justify-between mb-2">
+            <span className="font-bold text-[#1B2333] text-[18px] flex items-center gap-2">
+              <Timer className="w-5 h-5 text-[#2B6BF3]" />
+              1. 5분 담그기
             </span>
 
             {/* Fast Demo Toggle */}
-            <label className="flex items-center gap-1.5 cursor-pointer bg-[#F5F7FB] px-2.5 py-1 rounded-full border border-slate-200">
+            <label className="flex items-center gap-1.5 cursor-pointer bg-[#F5F7FB] px-3 py-1.5 rounded-full border border-slate-200">
               <input
                 type="checkbox"
                 checked={demoFastMode}
                 disabled={isRunning}
                 onChange={(e) => setDemoFastMode(e.target.checked)}
-                className="w-3.5 h-3.5 accent-[#2B6BF3] rounded cursor-pointer"
+                className="w-4 h-4 accent-[#2B6BF3] rounded cursor-pointer"
               />
-              <span className="text-[12px] font-medium text-[#6B7690]">데모 10초</span>
+              <span className="text-[14px] font-semibold text-[#64748B]">데모 10초</span>
             </label>
           </div>
 
-          {/* 56px Timer Digits */}
-          <div className="my-2 text-center">
+          {/* 64px Timer Digits */}
+          <div className="my-3 text-center">
             <div
-              className={`text-[56px] font-extrabold font-mono tabular-nums tracking-tight leading-none ${
+              className={`text-[64px] font-black font-mono tabular-nums tracking-tight leading-none ${
                 timerFinished
-                  ? 'text-[#22A06B]'
+                  ? 'text-[#16A34A]'
                   : isRunning
                   ? 'text-[#2B6BF3]'
-                  : 'text-[#6B7690]'
+                  : 'text-[#64748B]'
               }`}
             >
               {formatTimer(secondsLeft)}
             </div>
-            <p className="text-[13px] font-medium text-[#6B7690] mt-2">
-              {timerFinished
-                ? '소독액에 담그기가 끝났어요. 흐르는 물로 헹궈주세요.'
-                : isRunning
-                ? '소독액에 담그는 중이에요.'
-                : '소독액에 기구를 담그고 시작을 눌러주세요.'}
-            </p>
           </div>
 
           {/* Progress bar */}
-          <div className="w-full bg-[#E8F0FE] h-2 rounded-full overflow-hidden mb-3">
+          <div className="w-full bg-[#E8F0FE] h-2.5 rounded-full overflow-hidden mb-4">
             <div
               className={`h-full transition-all duration-300 rounded-full ${
-                timerFinished ? 'bg-[#22A06B]' : 'bg-[#2B6BF3]'
+                timerFinished ? 'bg-[#16A34A]' : 'bg-[#2B6BF3]'
               }`}
               style={{ width: `${progressPercent}%` }}
             />
@@ -131,7 +118,7 @@ export const SanitizeScreen: React.FC<SanitizeScreenProps> = ({ task, onComplete
           {!timerFinished ? (
             <button
               onClick={() => setIsRunning(!isRunning)}
-              className={`w-full py-3 rounded-[12px] font-semibold text-[15px] flex items-center justify-center gap-2 transition cursor-pointer ${
+              className={`w-full py-4 rounded-[14px] font-extrabold text-[18px] flex items-center justify-center gap-2 transition cursor-pointer shadow-xs ${
                 isRunning
                   ? 'bg-amber-500 text-white'
                   : 'bg-[#2B6BF3] hover:bg-[#1F52C9] text-white'
@@ -139,28 +126,28 @@ export const SanitizeScreen: React.FC<SanitizeScreenProps> = ({ task, onComplete
             >
               {isRunning ? (
                 <>
-                  <Bell className="w-4 h-4 animate-spin" />
-                  <span>타이머가 돌아가고 있어요 (일시정지)</span>
+                  <Bell className="w-5 h-5 animate-spin" />
+                  <span>타이머 정지</span>
                 </>
               ) : (
                 <>
-                  <Play className="w-4 h-4 fill-white" />
+                  <Play className="w-5 h-5 fill-white" />
                   <span>타이머 시작 ({demoFastMode ? '10초' : '5분'})</span>
                 </>
               )}
             </button>
           ) : (
-            <div className="w-full py-2.5 bg-[#E8F0FE] rounded-[12px] flex items-center justify-center gap-1.5 text-[#1F52C9] text-[14px] font-semibold">
-              <Check className="w-4 h-4 text-[#2B6BF3] stroke-[2.5]" />
-              <span>소독액에 담그기가 끝났어요</span>
+            <div className="w-full py-3.5 bg-[#E8F0FE] rounded-[14px] flex items-center justify-center gap-2 text-[#1F52C9] text-[16px] font-bold">
+              <Check className="w-5 h-5 text-[#2B6BF3] stroke-[3]" />
+              <span>담그기 완료</span>
             </div>
           )}
         </div>
 
         {/* 2. Rinse Photo Card */}
-        <div className="bg-white rounded-[16px] p-4 border border-[#E8F0FE]">
-          <span className="font-semibold text-[14px] text-[#1B2333] block mb-2">
-            2. 흐르는 물로 헹구고 사진 찍기
+        <div className="bg-white rounded-[18px] p-4.5 border border-[#E8F0FE]">
+          <span className="font-bold text-[18px] text-[#1B2333] block mb-2.5">
+            2. 헹구고 사진 찍기
           </span>
 
           <CameraCapture
@@ -168,7 +155,7 @@ export const SanitizeScreen: React.FC<SanitizeScreenProps> = ({ task, onComplete
             disabled={!timerFinished}
             label={
               timerFinished
-                ? '눌러서 헹굼 사진 찍기'
+                ? '헹굼 사진 찍기'
                 : '1단계가 끝나면 사진을 찍을 수 있어요'
             }
             onPhotoCaptured={(id) => setPhotoId(id)}
@@ -185,23 +172,23 @@ export const SanitizeScreen: React.FC<SanitizeScreenProps> = ({ task, onComplete
         onClose={() => setModalPhotoUrl(null)}
       />
 
-      {/* 3단: 하단 고정 버튼 (56px, 14px radius, #2B6BF3 or #E3EAF8) */}
+      {/* 3단: 하단 고정 버튼 (더 높고 큼직한 버튼, 글씨 20px) */}
       <div
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
-        className="shrink-0 px-4.5 pt-2.5 bg-white border-t border-[#E8F0FE] z-10"
+        className="shrink-0 px-4.5 pt-3 bg-white border-t border-[#E8F0FE] z-10"
       >
         {isFormComplete ? (
           <button
             onClick={handleFinish}
-            className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-bold text-[18px] rounded-[14px] transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+            className="w-full h-15 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-extrabold text-[20px] rounded-[16px] transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
           >
-            <Check className="w-5 h-5 stroke-[2.5]" />
+            <Check className="w-6 h-6 stroke-[3]" />
             <span>완료할게요</span>
           </button>
         ) : (
           <button
             disabled
-            className="w-full h-14 bg-[#E3EAF8] text-[#9FB0D4] font-medium text-[16px] rounded-[14px] cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full h-15 bg-[#E3EAF8] text-[#9FB0D4] font-bold text-[18px] rounded-[16px] cursor-not-allowed flex items-center justify-center gap-2"
           >
             <span>1·2단계를 마치면 끝나요</span>
           </button>

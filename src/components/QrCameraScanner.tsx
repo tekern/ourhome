@@ -6,7 +6,7 @@ import React, {
   useImperativeHandle,
 } from 'react';
 import jsQR from 'jsqr';
-import { Camera, AlertCircle, RefreshCw, QrCode } from 'lucide-react';
+import { Camera, AlertCircle, RefreshCw } from 'lucide-react';
 import { parseShygQr, getSpotNameByCode } from '../utils/qrConstants';
 
 export interface QrCameraScannerRef {
@@ -18,7 +18,7 @@ interface QrCameraScannerProps {
   expectedCode: string; // e.g. "FRIDGE-01"
   expectedSpotName: string; // e.g. "냉장고"
   onScanSuccess: (code: string) => void;
-  onFallbackDemo: () => void;
+  onFallbackDemo?: () => void;
   onCameraActiveChange?: (active: boolean) => void;
 }
 
@@ -378,20 +378,15 @@ export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScan
               }}
             >
               <Camera className="w-12 h-12 text-slate-400 mb-2 stroke-[1.5]" />
-              <span className="text-[15px] font-bold text-white mb-1">
+              <span className="text-[17px] font-bold text-white mb-3">
                 {errorMessage || '카메라를 켜주세요'}
               </span>
-              <p className="text-[12px] text-slate-300 max-w-[200px] leading-tight mb-3">
-                {errorMessage
-                  ? '다시 시도하거나 데모 버튼으로 바로 진행할 수 있어요.'
-                  : '아래 버튼을 눌러 카메라를 켜고 QR 코드를 비춰주세요.'}
-              </p>
               <button
                 type="button"
                 onClick={handleStartCamera}
-                className="flex items-center gap-1.5 text-[14px] font-semibold text-white bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] px-4 py-2 rounded-[12px] transition cursor-pointer"
+                className="flex items-center gap-2 text-[15px] font-bold text-white bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] px-5 py-2.5 rounded-[12px] transition cursor-pointer"
               >
-                <Camera className="w-4 h-4" />
+                <Camera className="w-4.5 h-4.5" />
                 <span>{errorMessage ? '카메라 다시 시도' : '카메라 켜기'}</span>
               </button>
             </div>
@@ -414,18 +409,6 @@ export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScan
             </div>
           </div>
         )}
-
-        {/* Fallback Demo Button (Always available for seamless PC testing) */}
-        <div className="mt-2.5 w-full max-w-xs flex justify-center">
-          <button
-            type="button"
-            onClick={onFallbackDemo}
-            className="text-[13px] text-[#2B6BF3] hover:text-[#1F52C9] bg-[#E8F0FE] hover:bg-[#dce9fd] active:scale-95 px-3 py-1.5 rounded-full font-medium flex items-center gap-1.5 transition cursor-pointer"
-          >
-            <QrCode className="w-3.5 h-3.5" />
-            <span>데모 인식하기 (카메라 없이 바로 통과)</span>
-          </button>
-        </div>
       </div>
     );
   }
