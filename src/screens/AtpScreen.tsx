@@ -28,11 +28,13 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
   const completedSpotsCount = spots.filter((s) => s.rluValue !== undefined).length;
   const allSpotsMeasured = completedSpotsCount === 4;
 
-  // Measure active spot
+  // Measure active spot (initial measurement or corrective retest)
   const handleMeasureCurrentSpot = () => {
     setIsMeasuring(true);
     setTimeout(() => {
-      const val = mockRluValues[activeSpotIndex];
+      const spot = spots[activeSpotIndex];
+      const isRetest = spot.rluValue !== undefined && !spot.passed;
+      const val = isRetest ? 45 : mockRluValues[activeSpotIndex];
       const isPassed = val <= 200;
 
       const updated = spots.map((s, idx) => {
@@ -42,6 +44,7 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
             rluValue: val,
             initialRluValue: val > 200 ? val : s.initialRluValue,
             passed: isPassed,
+            hasRetested: isRetest ? true : s.hasRetested,
           };
         }
         return s;
@@ -49,30 +52,9 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
       setSpots(updated);
       setIsMeasuring(false);
 
-      if (activeSpotIndex < 3) {
+      if (activeSpotIndex < 3 && !isRetest) {
         setActiveSpotIndex(activeSpotIndex + 1);
       }
-    }, 350);
-  };
-
-  // Corrective retest for spot 2
-  const handleRetestSpot2 = (spotId: number) => {
-    setIsMeasuring(true);
-    setTimeout(() => {
-      const retestVal = 45;
-      const updated = spots.map((s) => {
-        if (s.id === spotId) {
-          return {
-            ...s,
-            rluValue: retestVal,
-            passed: true,
-            hasRetested: true,
-          };
-        }
-        return s;
-      });
-      setSpots(updated);
-      setIsMeasuring(false);
     }, 350);
   };
 
@@ -165,8 +147,11 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
             return (
               <div
                 key={spot.id}
-                onClick={() => setActiveSpotIndex(idx)}
-                className={`p-4 rounded-[18px] border transition cursor-pointer flex flex-col gap-2.5 ${
+                onClick={() => {
+                  setActiveSpotIndex(idx);
+                  setIsScanningQr(true);
+                }}
+                className={`p-4.5 rounded-[18px] border transition cursor-pointer flex flex-col gap-3 ${
                   isExceeded
                     ? 'bg-rose-50/70 border-rose-200 shadow-xs'
                     : isDone
@@ -177,23 +162,21 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-3.5 min-w-0">
                     <div
-                      className={`w-9 h-9 rounded-[10px] flex items-center justify-center font-black text-[16px] shrink-0 ${
+                      className={`w-11 h-11 rounded-[12px] flex items-center justify-center font-black text-[18px] shrink-0 shadow-xs ${
                         isExceeded
                           ? 'bg-[#E5484D] text-white'
                           : isDone
                           ? 'bg-[#E8F0FE] text-[#1F52C9]'
-                          : isCurrent
-                          ? 'bg-[#2B6BF3] text-white'
-                          : 'bg-[#F5F7FB] text-[#64748B]'
+                          : 'bg-[#2B6BF3] text-white'
                       }`}
                     >
                       {spot.id}
                     </div>
 
                     <div className="min-w-0">
-                      <h3 className="text-[18px] font-bold text-[#1B2333] truncate leading-tight">
+                      <h3 className="text-[19px] font-extrabold text-[#1B2333] truncate leading-tight">
                         {spot.name}
                       </h3>
                       <p className="text-[14px] font-semibold text-[#64748B] truncate mt-0.5">
@@ -202,12 +185,12 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
                     </div>
                   </div>
 
-                  {/* Measurement Status */}
-                  <div className="shrink-0 text-right">
+                  {/* Measurement Status & Direct QR Action */}
+                  <div className="shrink-0">
                     {isDone ? (
-                      <div className="flex items-center gap-2 font-bold text-[16px]">
+                      <div className="flex items-center gap-2">
                         <span
-                          className={`tabular-nums text-[18px] ${
+                          className={`tabular-nums text-[18px] font-black ${
                             spot.passed ? 'text-[#16A34A]' : 'text-[#E5484D]'
                           }`}
                         >
@@ -215,29 +198,43 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
                         </span>
 
                         {spot.passed ? (
-                          <div className="w-8 h-8 rounded-full bg-[#2B6BF3] text-white flex items-center justify-center shadow-xs">
+                          <div className="w-8 h-8 rounded-full bg-[#16A34A] text-white flex items-center justify-center shadow-xs">
                             <Check className="w-5 h-5 stroke-[2.8]" />
                           </div>
                         ) : (
-                          <div className="w-8 h-8 rounded-full bg-[#E5484D] text-white flex items-center justify-center shadow-xs">
-                            <AlertTriangle className="w-5 h-5 stroke-[2.8]" />
-                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveSpotIndex(idx);
+                              setIsScanningQr(true);
+                            }}
+                            className="bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-95 text-white text-[13px] font-bold px-3 py-1.5 rounded-[10px] flex items-center gap-1 shadow-xs cursor-pointer"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>재측정</span>
+                          </button>
                         )}
                       </div>
-                    ) : isCurrent ? (
-                      <span className="text-[14px] font-bold text-[#1F52C9] bg-[#BCD0F7]/50 px-3 py-1 rounded-[8px]">
-                        지금 측정
-                      </span>
                     ) : (
-                      <div className="w-8 h-8 rounded-full border-2 border-dashed border-[#BCD0F7] flex items-center justify-center text-[#BCD0F7]">
-                        <Check className="w-4 h-4 stroke-[2]" />
-                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveSpotIndex(idx);
+                          setIsScanningQr(true);
+                        }}
+                        className="bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-95 text-white font-extrabold text-[15px] px-3.5 py-2 rounded-[12px] flex items-center gap-1.5 shadow-xs cursor-pointer"
+                      >
+                        <QrCode className="w-4.5 h-4.5 stroke-[2.4]" />
+                        <span>QR 측정</span>
+                      </button>
                     )}
                   </div>
                 </div>
 
-                {/* Individual Photo Button */}
-                <div className="flex items-center justify-between pt-1.5 border-t border-slate-100/90">
+                {/* Bottom Strip: Photo & Alerts */}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100/90">
                   <div className="flex items-center gap-2">
                     <button
                       onClick={(e) => {
@@ -271,7 +268,7 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
                   {isExceeded && (
                     <span className="text-[14px] font-bold text-[#E5484D] flex items-center gap-1">
                       <AlertTriangle className="w-4 h-4" />
-                      기준 초과
+                      기준 초과 (다시 씻고 측정)
                     </span>
                   )}
                   {spot.hasRetested && (
@@ -280,67 +277,9 @@ export const AtpScreen: React.FC<AtpScreenProps> = ({ spots: initialSpots, onCom
                     </span>
                   )}
                 </div>
-
-                {/* Spot 2 Retest Action */}
-                {isExceeded && isCurrent && (
-                  <div className="mt-1 bg-white p-3 rounded-[14px] border border-rose-200 flex items-center justify-between">
-                    <span className="text-[14px] font-semibold text-[#64748B]">
-                      측정값 {spot.initialRluValue} (초과)
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRetestSpot2(spot.id);
-                      }}
-                      className="bg-[#2B6BF3] hover:bg-[#1F52C9] text-white text-[14px] font-bold px-3 py-1.5 rounded-[10px] flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                      <span>다시 씻고 측정하기</span>
-                    </button>
-                  </div>
-                )}
               </div>
             );
           })}
-
-          {/* Active Spot Action Card */}
-          {currentSpot && (
-            <div className="mt-1 bg-white p-4.5 rounded-[18px] border border-[#E8F0FE] flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-[17px] font-bold text-[#1B2333]">
-                    {currentSpot.id}번 {currentSpot.name}
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => handleTriggerPhotoForSpot(currentSpot.id)}
-                  className={`flex items-center gap-1 text-[14px] px-3.5 py-1.5 rounded-[10px] font-bold transition cursor-pointer ${
-                    currentSpot.photoUrl
-                      ? 'bg-[#E8F0FE] text-[#1F52C9]'
-                      : 'bg-[#F5F7FB] text-[#2B6BF3] hover:bg-[#E8F0FE]'
-                  }`}
-                >
-                  <Camera className="w-4 h-4" />
-                  <span>{currentSpot.photoUrl ? '사진 완료' : '사진 찍기'}</span>
-                </button>
-              </div>
-
-              {/* QR 찍고 측정하기 버튼 */}
-              <button
-                onClick={() => setIsScanningQr(true)}
-                disabled={isMeasuring}
-                className="w-full h-14 bg-[#2B6BF3] hover:bg-[#1F52C9] active:scale-[0.98] text-white font-extrabold text-[18px] rounded-[14px] flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
-              >
-                <QrCode className="w-5 h-5" />
-                <span>
-                  {isMeasuring
-                    ? '측정 중...'
-                    : `${currentSpot.name} 측정하기`}
-                </span>
-              </button>
-            </div>
-          )}
         </div>
       </div>
 

@@ -82,12 +82,9 @@ export const TempMeasureScreen: React.FC<TempMeasureScreenProps> = ({
     <div className="flex-1 min-h-0 flex flex-col justify-between -mt-3.5 bg-white rounded-t-[28px] select-none overflow-hidden">
       {/* 2단: 가운데 내용 영역 (스크롤 가능) */}
       <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pt-5 px-4.5 pb-4 overscroll-contain bg-[#F5F7FB]">
-        {/* Header Title & Standard */}
-        <div className="bg-white rounded-[18px] p-4.5 mb-3.5 border border-[#E8F0FE] flex items-center justify-between">
+        {/* Header Title */}
+        <div className="bg-white rounded-[18px] p-4 mb-3.5 border border-[#E8F0FE] text-center">
           <h2 className="text-[22px] font-extrabold text-[#1B2333] tracking-tight">{task.title}</h2>
-          <span className="text-[16px] font-bold text-[#2B6BF3] bg-[#E8F0FE] px-3.5 py-1.5 rounded-[10px]">
-            {task.standardDesc}
-          </span>
         </div>
 
         {/* 1. 입력 방식 탭 3개 세그먼트 컨트롤: 자동 연결 / 직접 입력 / 사진 찍기 */}
