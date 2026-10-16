@@ -20,6 +20,7 @@ interface QrCameraScannerProps {
   onScanSuccess: (code: string) => void;
   onFallbackDemo?: () => void;
   onCameraActiveChange?: (active: boolean) => void;
+  autoStart?: boolean;
 }
 
 export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScannerProps>(
@@ -30,6 +31,7 @@ export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScan
       onScanSuccess,
       onFallbackDemo,
       onCameraActiveChange,
+      autoStart = true,
     },
     ref
   ) => {
@@ -211,6 +213,13 @@ export const QrCameraScanner = React.forwardRef<QrCameraScannerRef, QrCameraScan
         isCancelled = true;
       };
     }, [mediaStream, onCameraActiveChange, startScanLoop]);
+
+    // Auto-start camera on mount (directly triggers browser camera permission popup)
+    useEffect(() => {
+      if (autoStart) {
+        handleStartCamera();
+      }
+    }, [autoStart, handleStartCamera]);
 
     // Stop camera on unmount
     useEffect(() => {
